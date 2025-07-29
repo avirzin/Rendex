@@ -63,30 +63,6 @@
 
 ---
 
-## 🛠 .env.local Example
-
-```env
-NEXT_PUBLIC_ALCHEMY_API_KEY=your-alchemy-api-key
-NEXT_PUBLIC_ALCHEMY_NETWORK=sepolia
-```
-
----
-
-## 📝 .gitignore Template
-
-```gitignore
-node_modules/
-.next/
-out/
-.env*
-*.log
-.vscode/
-.idea/
-.DS_Store
-```
-
----
-
 ## 🚀 Getting Started
 
 1. Clone the repo
