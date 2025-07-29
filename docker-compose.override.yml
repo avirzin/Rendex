@@ -1,0 +1,33 @@
+# Development override file
+# This file is automatically loaded by docker-compose
+# You can customize it for your local development environment
+
+version: '3.8'
+
+services:
+  # Override frontend-dev for development
+  frontend-dev:
+    environment:
+      - NODE_ENV=development
+      - NEXT_TELEMETRY_DISABLED=1
+      - WATCHPACK_POLLING=true  # Enable file watching in Docker
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
+
+  # Enable Redis for development (uncomment if needed)
+  # redis:
+  #   ports:
+  #     - "6379:6379"
+
+  # Enable PostgreSQL for development (uncomment if needed)
+  # postgres:
+  #   ports:
+  #     - "5432:5432"
+
+  # Enable Hardhat node for local blockchain development (uncomment if needed)
+  # hardhat-node:
+  #   ports:
+  #     - "8545:8545" 

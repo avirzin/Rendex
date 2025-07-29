@@ -1,0 +1,100 @@
+@startuml Rendex Smart Contracts
+
+!theme plain
+skinparam classAttributeIconSize 0
+skinparam classFontSize 10
+skinparam classFontName Arial
+
+
+
+' Interface
+interface ICDIOracle {
+    +getCDI(): uint256
+    +getLastUpdateTime(): uint256
+    +getCDIWithMetadata(): (uint256, uint256, bool)
+    +isHealthy(): bool
+}
+
+' Main Contracts
+package "Rendex Contracts" {
+    class RendexToken {
+        -cdiOracle: ICDIOracle
+        -lastRebaseTime: uint256
+        -rebaseCount: uint256
+        -sharesPerToken: uint256
+        +REBASE_INTERVAL: uint256 = 86400
+        +CDI_MULTIPLIER: uint256 = 120
+        +MULTIPLIER_DENOMINATOR: uint256 = 100
+        +INITIAL_SHARES_PER_TOKEN: uint256 = 1e18
+        
+        +constructor(string, string, address, uint256)
+        +getCurrentCDI(): uint256
+        +calculateRebaseRate(): uint256
+        +rebase(): void
+        +balanceOf(address): uint256
+        +totalSupply(): uint256
+        +sharesOf(address): uint256
+        +tokensForShares(uint256): uint256
+        +sharesForTokens(uint256): uint256
+        +updateCDIOracle(address): void
+        +pause(): void
+        +unpause(): void
+        +getNextRebaseTime(): uint256
+        +isRebaseReady(): bool
+        +getRebaseStats(): (uint256, uint256, uint256, uint256, uint256, bool)
+        +_beforeTokenTransfer(address, address, uint256): void
+    }
+
+    class CDIOracle {
+        -currentCDI: uint256
+        -lastUpdateTime: uint256
+        -authorizedUpdaters: mapping(address => bool)
+        +MAX_CDI_RATE: uint256 = 5000
+        +MIN_CDI_RATE: uint256 = 0
+        +STALE_THRESHOLD: uint256 = 604800
+        
+        +constructor(uint256)
+        +getCDI(): uint256
+        +getLastUpdateTime(): uint256
+        +getCDIWithMetadata(): (uint256, uint256, bool)
+        +isHealthy(): bool
+        +updateCDI(uint256): void
+        +setAuthorizedUpdater(address, bool): void
+        +isStale(): bool
+        +getTimeUntilStale(): uint256
+        +pause(): void
+        +unpause(): void
+        +getOracleStats(): (uint256, uint256, bool, bool, uint256)
+        +emergencyUpdateCDI(uint256): void
+    }
+}
+
+' Relationships
+RendexToken --> ICDIOracle : uses
+CDIOracle --|> ICDIOracle : implements
+
+
+
+' Notes
+note right of RendexToken
+  Main rebasing ERC-20 token
+  that simulates yield based
+  on CDI rates with daily
+  rebases at 120% of CDI
+end note
+
+note right of CDIOracle
+  Oracle contract that stores
+  and provides CDI rate data
+  with validation and staleness
+  detection
+end note
+
+note right of ICDIOracle
+  Interface for CDI oracle
+  integration, allows for
+  different implementations
+  and easy testing
+end note
+
+@enduml 

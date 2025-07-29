@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  # Frontend application
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    restart: unless-stopped
+    networks:
+      - rendex-network
+
+  # Development environment
+  frontend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3001:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+      - NEXT_TELEMETRY_DISABLED=1
+    command: npm run dev
+    networks:
+      - rendex-network
+
+  # Optional: Redis for caching (if needed)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - rendex-network
+
+  # Optional: PostgreSQL for database (if needed)
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: rendex
+      POSTGRES_USER: rendex_user
+      POSTGRES_PASSWORD: rendex_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - rendex-network
+
+  # Optional: Hardhat node for local blockchain development
+  hardhat-node:
+    image: node:18-alpine
+    working_dir: /app
+    ports:
+      - "8545:8545"
+    volumes:
+      - .:/app
+    command: >
+      sh -c "npm install && npx hardhat node --hostname 0.0.0.0"
+    networks:
+      - rendex-network
+
+  # CDI Oracle Service
+  oracle-service:
+    build:
+      context: ./oracle-service
+      dockerfile: Dockerfile
+    environment:
+      - RPC_URL=${RPC_URL:-http://hardhat-node:8545}
+      - PRIVATE_KEY=${ORACLE_PRIVATE_KEY}
+      - CDI_ORACLE_ADDRESS=${CDI_ORACLE_ADDRESS}
+      - LOG_LEVEL=${ORACLE_LOG_LEVEL:-info}
+    restart: unless-stopped
+    depends_on:
+      - hardhat-node
+    networks:
+      - rendex-network
+
+volumes:
+  redis-data:
+  postgres-data:
+
+networks:
+  rendex-network:
+    driver: bridge 

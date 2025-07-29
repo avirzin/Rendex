@@ -32,10 +32,11 @@
 ### Smart Contracts
 
 - `RendexToken`: ERC-20 token with `rebase()` function and CDI oracle integration
+- `CDIOracle`: Oracle contract for CDI rate data
 
 ### Off-Chain Components
 
-- **CDI Oracle Service**: A script or trusted backend service that fetches the current CDI from the [Brazilian Central Bank API](https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados/ultimos/1?formato=json) and updates the on-chain oracle once per day. The monthly CDI rate is converted to a daily compound rate using the formula: `daily_rate = (1 + monthly_cdi)^(1/30) - 1`.
+- **CDI Oracle Service**: A Node.js service that fetches the current CDI from the [Brazilian Central Bank API](https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados/ultimos/1?formato=json) and updates the on-chain oracle once per day. The monthly CDI rate is converted to a daily compound rate using the formula: `daily_rate = (1 + monthly_cdi)^(1/30) - 1`.
 - **Rebaser**: A cronjob or script that calls `updateCDI()` and triggers `rebase()` daily to maintain the yield simulation.
 
 ---
@@ -65,6 +66,28 @@
 
 ## 🚀 Getting Started
 
+### Option 1: Docker (Recommended)
+
+1. Clone the repo
+2. Start development environment:
+
+```bash
+# Using Makefile (recommended)
+make up-dev
+
+# Or using Docker Compose directly
+docker-compose up -d frontend-dev
+```
+
+3. Access the application at http://localhost:3001
+
+4. View logs:
+```bash
+make logs-frontend-dev
+```
+
+### Option 2: Local Development
+
 1. Clone the repo
 2. Install dependencies:
 
@@ -79,6 +102,58 @@ npm install
 ```bash
 npm run dev
 ```
+
+### Docker Commands
+
+```bash
+# Show all available Docker commands
+make help
+
+# Development
+make up-dev         # Start development environment
+make build-dev      # Build development image
+make logs-frontend-dev  # View logs
+
+# Oracle Service
+make up-oracle      # Start oracle service only
+make oracle-logs    # View oracle service logs
+make oracle-manual  # Trigger manual CDI update
+make oracle-status  # Check oracle service status
+
+# Production
+make build          # Build production image
+make up             # Start production environment
+make deploy-prod    # Deploy to production
+
+# Maintenance
+make down           # Stop all services
+make clean          # Clean up containers and images
+```
+
+For detailed Docker documentation, see [README-Docker.md](README-Docker.md).
+
+### Oracle Service Setup
+
+The CDI Oracle Service is included in the Docker setup and will automatically start with the development environment. To configure it:
+
+1. **Set environment variables** in your `.env` file:
+```bash
+RPC_URL=https://sepolia.infura.io/v3/YOUR_INFURA_KEY
+ORACLE_PRIVATE_KEY=your_private_key_here
+CDI_ORACLE_ADDRESS=0x... # Address of deployed CDI Oracle contract
+```
+
+2. **Start the oracle service**:
+```bash
+make up-oracle
+```
+
+3. **Monitor the service**:
+```bash
+make oracle-logs
+```
+
+For detailed oracle service documentation, see [oracle-service/README.md](oracle-service/README.md).
 
 ---
 
