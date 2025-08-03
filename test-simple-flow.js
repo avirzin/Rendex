@@ -237,7 +237,8 @@ class SimpleRendexTest {
     console.log('=' .repeat(60));
     console.log(`👤 Test Account: ${this.wallet.address}`);
     console.log(`🌐 Network: ${(await this.provider.getNetwork()).name}`);
-    console.log(`💰 Account Balance: ${ethers.formatEther(await this.provider.getBalance(this.wallet.address))} ETH`);
+    const balance = await this.provider.getBalance(this.wallet.address);
+    console.log(`💰 Account Balance: ${ethers.formatEther(balance.toString())} ETH`);
     
     try {
       // Test 1: Investment
