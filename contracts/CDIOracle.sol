@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 import "./interfaces/ICDIOracle.sol";
 
 /**
@@ -53,8 +53,9 @@ contract CDIOracle is ICDIOracle, Ownable, Pausable {
     /**
      * @dev Constructor
      * @param _initialCDI Initial CDI rate in basis points (e.g., 1000 = 10%)
+     * @param initialOwner The initial owner address
      */
-    constructor(uint256 _initialCDI) validCDIRate(_initialCDI) {
+    constructor(uint256 _initialCDI, address initialOwner) Ownable(initialOwner) validCDIRate(_initialCDI) {
         currentCDI = _initialCDI;
         lastUpdateTime = block.timestamp;
     }

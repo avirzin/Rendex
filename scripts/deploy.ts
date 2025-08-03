@@ -14,7 +14,7 @@ async function main() {
   
   // Initial CDI rate: 10% (1000 basis points)
   const initialCDI = 1000; // 10% in basis points
-  const cdiOracle = await CDIOracle.deploy(initialCDI);
+  const cdiOracle = await CDIOracle.deploy(initialCDI, deployer.address);
   await cdiOracle.waitForDeployment();
   
   const cdiOracleAddress = await cdiOracle.getAddress();
@@ -33,7 +33,8 @@ async function main() {
     tokenName,
     tokenSymbol,
     cdiOracleAddress,
-    initialSupply
+    initialSupply,
+    deployer.address
   );
   await rendexToken.waitForDeployment();
   

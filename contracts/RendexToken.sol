@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 import "./interfaces/ICDIOracle.sol";
 
 /**
@@ -65,22 +65,21 @@ contract RendexToken is ERC20, Ownable, ReentrancyGuard, Pausable {
      * @param _symbol Token symbol
      * @param _cdiOracle Address of CDI oracle
      * @param _initialSupply Initial token supply
+     * @param initialOwner The initial owner address
      */
     constructor(
         string memory _name,
         string memory _symbol,
         address _cdiOracle,
-        uint256 _initialSupply
-    ) ERC20(_name, _symbol) {
+        uint256 _initialSupply,
+        address initialOwner
+    ) ERC20(_name, _symbol) Ownable(initialOwner) {
         require(_cdiOracle != address(0), "RendexToken: invalid oracle address");
-        
         cdiOracle = ICDIOracle(_cdiOracle);
         lastRebaseTime = block.timestamp;
         sharesPerToken = INITIAL_SHARES_PER_TOKEN;
-        
-        // Mint initial supply
         if (_initialSupply > 0) {
-            _mint(msg.sender, _initialSupply);
+            _mint(initialOwner, _initialSupply);
         }
     }
     
@@ -188,15 +187,9 @@ contract RendexToken is ERC20, Ownable, ReentrancyGuard, Pausable {
         _unpause();
     }
     
-    /**
-     * @dev Override _beforeTokenTransfer to respect pausing
-     */
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal override whenNotPaused {
-        super._beforeTokenTransfer(from, to, amount);
+    // Replace _beforeTokenTransfer with _update for OpenZeppelin v5
+    function _update(address from, address to, uint256 value) internal override whenNotPaused {
+        super._update(from, to, value);
     }
     
     /**

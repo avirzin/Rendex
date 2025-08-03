@@ -61,17 +61,12 @@ class CDIOracleService {
   }
 
   /**
-   * Convert monthly CDI to daily compound rate
-   * Formula: daily_rate = (1 + monthly_cdi)^(1/30) - 1
+   * CDI from API is already daily rate
+   * No conversion needed - API returns daily CDI directly
    */
-  convertMonthlyToDaily(monthlyCDI) {
-    const monthlyRate = monthlyCDI / 100; // Convert percentage to decimal
-    const dailyRate = Math.pow(1 + monthlyRate, 1/30) - 1;
-    const dailyRatePercentage = dailyRate * 100;
-    
-    console.log(`🔄 Converting monthly CDI ${monthlyCDI}% to daily rate: ${dailyRatePercentage.toFixed(6)}%`);
-    
-    return dailyRatePercentage;
+  getDailyCDI(cdiFromAPI) {
+    console.log(`📊 CDI from API (daily): ${cdiFromAPI}%`);
+    return cdiFromAPI; // Already daily rate
   }
 
   /**
@@ -140,11 +135,11 @@ class CDIOracleService {
     try {
       console.log('🚀 Starting CDI update process...');
       
-      // 1. Fetch CDI from API
-      const monthlyCDI = await this.fetchCDIFromAPI();
+      // 1. Fetch CDI from API (already daily rate)
+      const cdiFromAPI = await this.fetchCDIFromAPI();
       
-      // 2. Convert to daily rate
-      const dailyCDI = this.convertMonthlyToDaily(monthlyCDI);
+      // 2. Get daily CDI (no conversion needed)
+      const dailyCDI = this.getDailyCDI(cdiFromAPI);
       
       // 3. Apply multiplier
       const adjustedCDI = this.applyCDIMultiplier(dailyCDI);

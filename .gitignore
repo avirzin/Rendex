@@ -1,23 +1,20 @@
-# Remix compiler artifacts
-**/artifacts/
-**/artifacts/**
+# Dependencies
+node_modules/
 
-# Remix plugin state folders
-deps/
-states/
-
-# Debug info
-*.dbg.json
-*.tsbuildinfo
-
-# Optional
+# Environment files
 .env
 .env.local
+.env.*.local
+oracle-service/.env
 
-# Next.js
-.next/
-out/
-node_modules/
+# Hardhat
+cache/
+artifacts/
+typechain-types/
+
+# TypeScript
+*.tsbuildinfo
+*.dbg.json
 
 # Logs
 *.log
@@ -32,3 +29,6 @@ yarn-error.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# Other
+.cache/

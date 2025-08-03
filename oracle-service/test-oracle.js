@@ -1,3 +1,4 @@
+require('dotenv').config();
 const axios = require('axios');
 
 // Test configuration
@@ -32,17 +33,15 @@ async function testCDIAPI() {
 }
 
 /**
- * Test rate conversion logic
+ * Test rate conversion logic (CDI is already daily)
  */
-function testRateConversion(monthlyCDI) {
+function testRateConversion(dailyCDI) {
   console.log('🧪 Testing rate conversion logic...');
   
-  // Convert monthly to daily
-  const monthlyRate = monthlyCDI / 100;
-  const dailyRate = Math.pow(1 + monthlyRate, 1/30) - 1;
-  const dailyRatePercentage = dailyRate * 100;
+  // CDI from API is already daily rate
+  const dailyRatePercentage = parseFloat(dailyCDI);
   
-  console.log(`📊 Monthly CDI: ${monthlyCDI}%`);
+  console.log(`📊 Daily CDI from API: ${dailyCDI}%`);
   console.log(`📊 Daily rate: ${dailyRatePercentage.toFixed(6)}%`);
   
   // Apply multiplier
@@ -57,7 +56,7 @@ function testRateConversion(monthlyCDI) {
   console.log('✅ Rate conversion test successful!');
   
   return {
-    monthlyCDI,
+    dailyCDI,
     dailyRate: dailyRatePercentage,
     adjustedCDI,
     contractValue
