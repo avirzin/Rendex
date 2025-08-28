@@ -3,7 +3,7 @@ require('dotenv').config();
 
 // Configuration
 const CONFIG = {
-  RPC_URL: process.env.SEPOLIA_RPC_URL,
+  RPC_URL: process.env.RPC_URL,
   PRIVATE_KEY: process.env.PRIVATE_KEY,
   CDI_ORACLE_ADDRESS: process.env.CDI_ORACLE_ADDRESS,
   RENDEX_TOKEN_ADDRESS: '0xEb42Bbd1B4a1A7145e3c90853F96f7846cafdb99', // From deployment
@@ -41,7 +41,7 @@ const RENDEX_TOKEN_ABI = [
 class RendexTestFlow {
   constructor() {
     // Validate configuration
-    if (!CONFIG.RPC_URL) throw new Error('SEPOLIA_RPC_URL not set in environment');
+    if (!CONFIG.RPC_URL) throw new Error('RPC_URL not set in environment');
     if (!CONFIG.PRIVATE_KEY) throw new Error('PRIVATE_KEY not set in environment');
     if (!CONFIG.CDI_ORACLE_ADDRESS) throw new Error('CDI_ORACLE_ADDRESS not set in environment');
     

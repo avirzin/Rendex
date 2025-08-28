@@ -21,7 +21,7 @@ describe("RendexToken", function () {
 
     // Deploy CDI Oracle
     const CDIOracle = await ethers.getContractFactory("CDIOracle");
-    cdiOracle = await CDIOracle.deploy(INITIAL_CDI);
+    cdiOracle = await CDIOracle.deploy(INITIAL_CDI, owner.address);
 
     // Deploy RendexToken directly
     const RendexToken = await ethers.getContractFactory("RendexToken");
@@ -29,7 +29,8 @@ describe("RendexToken", function () {
       TOKEN_NAME,
       TOKEN_SYMBOL,
       await cdiOracle.getAddress(),
-      INITIAL_SUPPLY
+      INITIAL_SUPPLY,
+      owner.address
     );
   });
 
