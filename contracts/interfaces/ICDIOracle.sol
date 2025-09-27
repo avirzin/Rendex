@@ -12,7 +12,7 @@ interface ICDIOracle {
     
     /**
      * @dev Get the current CDI rate
-     * @return cdiRate Current CDI rate in basis points (e.g., 1000 = 10%)
+     * @return cdiRate Current CDI rate in parts per million (ppm)
      */
     function getCDI() external view returns (uint256);
     
@@ -24,7 +24,7 @@ interface ICDIOracle {
     
     /**
      * @dev Get CDI rate with additional metadata
-     * @return cdiRate Current CDI rate in basis points
+     * @return cdiRate Current CDI rate in parts per million (ppm)
      * @return lastUpdate Last update timestamp
      * @return isValid Whether the rate is valid (not stale)
      */
@@ -33,6 +33,18 @@ interface ICDIOracle {
         uint256 lastUpdate,
         bool isValid
     );
+
+    /**
+     * @dev Get CDI rate as percentage (for human readability)
+     * @return CDI rate as percentage with 4 decimal places
+     */
+    function getCDIAsPercentage() external view returns (uint256);
+
+    /**
+     * @dev Get CDI rate in basis points (for compatibility)
+     * @return CDI rate in basis points
+     */
+    function getCDIInBasisPoints() external view returns (uint256);
     
     /**
      * @dev Check if the oracle is functioning properly

@@ -1,0 +1,55 @@
+service: rendex-oracle
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  region: us-east-1
+  stage: ${opt:stage, 'dev'}
+  environment:
+    RPC_URL: ${env:RPC_URL}
+    PRIVATE_KEY: ${env:PRIVATE_KEY}
+    CDI_ORACLE_ADDRESS: ${env:CDI_ORACLE_ADDRESS}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+          Resource: arn:aws:logs:*:*:*
+        - Effect: Allow
+          Action:
+            - lambda:InvokeFunction
+          Resource: "*"
+
+functions:
+  updateCDI:
+    handler: lambda-oracle.handler
+    name: rendex-oracle-update-cdi
+    description: Updates CDI rate on the blockchain
+    timeout: 300
+    memorySize: 512
+    events:
+      - schedule:
+          rate: cron(0 0 * * ? *)  # Daily at midnight UTC
+          enabled: true
+          description: Daily CDI update at midnight UTC
+      - http:
+          path: /update-cdi
+          method: post
+          cors: true
+    tags:
+      Project: Rendex
+      Service: Oracle
+      Environment: ${self:provider.stage}
+
+plugins:
+  - serverless-offline
+
+custom:
+  serverless-offline:
+    httpPort: 3000
+    noPrependStageInUrl: true
