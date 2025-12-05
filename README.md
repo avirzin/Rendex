@@ -1,5 +1,28 @@
 # Rendex
 
+[**Rendex** is a simple Web3 simulation of an investment flow using a rebasing ERC-20 token. It mimics how users earn yield on invested funds, with returns based on a post-fixed rate tied to **CDI**, a Brazilian benchmark interest rate used in fixed-income financial products. The token balance grows daily through smart contract-controlled rebases, using an oracle-fed CDI value to simulate on-chain yield.
+
+> ⚖️ **Regulatory Notice**  
+> The modeled asset in this project behaves economically as an investment product and would likely be characterized as a **security** under Brazilian regulation.  
+> In a real market implementation, a yield-bearing tokenized deposit would not function as a stablecoin, but rather as a financial investment whose return is tied to the performance of underlying assets.  
+> As such, it would be subject to Brazilian taxes applicable to investments, including **Imposto de Renda (IR)** and **IOF**, depending on the final structure adopted.
+
+
+# Investment Journey Overview
+
+This section provides a simplified, high-level view of how an investment moves from fiat deposit to on-chain value creation and final redemption.
+| &nbsp; | &nbsp;  |
+|--------|-----------|
+| <img src="./images/step01.png" alt="Depositing fiat" width="200px"> |**Depositing fiat** <br> The investor begins by depositing fiat currency into the platform. This deposit is held by the financial institution or on/off-ramp partner before entering the tokenization flow. |
+| <img src="./images/step02.png" alt="Obtaining tokenized deposit" width="200px"> | **Obtaining tokenized deposit** <br> The fiat deposit is converted into a digital representation known as a tokenized deposit. This on-chain token reflects the investor’s claim to the underlying real-world funds. |
+|<img src="./images/step03.png" alt="Investment pool" width="200px"> |**Investment pool** <br> The investor’s tokenized deposit is transferred into the investment pool smart contract. In exchange, the investor receives pool tokens representing their proportional share of the pool.|
+|<img src="./images/step04.png" alt="Pool value increases" width="200px"> |**Pool value increases** <br> As the underlying assets generate yield, the pool’s unit price increases over time. The oracle feeds updated pricing and performance data to the smart contract, ensuring accurate valuation.|
+|<img src="./images/step05.png" alt="Redeeming token" width="200px"> |**Redeeming token** <br> The investor converts their tokenized deposit back into fiat currency through the off-ramp partner. Finally, the funds are transferred back to the investor’s traditional bank account.|
+---
+
+> **Note:** In a real-world implementation, the investor would begin by depositing fiat, which is then converted into a tokenized deposit by a licensed financial institution.  
+> This project does **not** cover the fiat-to-token conversion process and starts from the point where the ERC-20 tokenized deposit already exists on-chain.
+
 **Rendex** is a simple Web3 simulation of an investment flow using a rebasing ERC-20 token. It mimics how users earn yield on invested funds, with returns based on a post-fixed rate tied to **CDI** — a Brazilian benchmark interest rate used in fixed-income financial products. The token balance grows daily through smart contract-controlled rebases, using an oracle-fed CDI value to simulate on-chain yield.
 
 ---
