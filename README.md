@@ -2,13 +2,14 @@
 
 ## Introduction
 
-This project serves as the final submission for the "EVM Chain Certification" program offered by Alchemy University. The investment use case presented herein was selected as the capstone project due to its foundational simplicity, which provides a clear and accessible framework for demonstrating core blockchain development principles. However, the implementation introduces several nuanced complexities, particularly in the integration of an off-chain oracle mechanism that bridges traditional financial data sources with on-chain smart contract execution. The comprehensive investment lifecycle—encompassing tokenization, yield accrual through rebasing mechanisms, and redemption processes—offers a holistic opportunity to synthesize and apply the diverse technical competencies acquired throughout the certification curriculum, including smart contract development, oracle integration, token economics, and decentralized application architecture.
+This project serves as the final submission for the "EVM Chain Certification" program offered by Alchemy University. The investment use case presented herein was selected as the capstone project due to its foundational simplicity, which provides a clear and accessible framework for demonstrating core blockchain development principles. However, the implementation introduces several nuanced complexities, particularly in the integration of an off-chain oracle mechanism that bridges traditional financial data sources with on-chain smart contract execution. The comprehensive investment lifecycle—encompassing tokenization, yield accrual through rebasing mechanisms, and redemption processes—offers a holistic opportunity to synthesize and apply the diverse technical competencies acquired throughout the certification curriculum.
 
 ## Project Description
 
 **Rendex** is a simple Web3 simulation of an investment flow using a rebasing ERC-20 token. It mimics how users earn yield on invested funds, with returns based on a post-fixed rate tied to **CDI**, a Brazilian benchmark interest rate used in fixed-income financial products. The token balance grows daily through smart contract-controlled rebases, using an oracle-fed CDI value to simulate on-chain yield.
 
-> ⚖️ **Regulatory Notice**  
+> ⚖️ **Regulatory Notice**
+>
 > The modeled asset in this project I understand behaves economically as an investment product and would likely be characterized as a **security** under Brazilian regulation.  
 > In a real market implementation, a yield-bearing tokenized deposit would not function as a stablecoin, but rather as a financial investment whose return is tied to the performance of underlying assets.  
 > As such, it would be subject to Brazilian taxes applicable to investments, including **Imposto de Renda (IR)** and **IOF**, depending on the final structure adopted.
@@ -82,6 +83,11 @@ This section provides a simplified, high-level view of how an investment moves f
 
 - **CDI Oracle Service**: A Node.js service that fetches the current CDI from the [Brazilian Central Bank API](https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados/ultimos/1?formato=json) and updates the on-chain oracle once per day. The monthly CDI rate is converted to a daily compound rate using the formula: `daily_rate = (1 + monthly_cdi)^(1/30) - 1`.
 - **Rebaser**: A cronjob or script that calls `updateCDI()` and triggers `rebase()` daily to maintain the yield simulation.
+
+### Diagrams
+
+- **Sequence Diagrams**: See [docs/sequence-diagram.md](docs/sequence-diagram.md) for detailed Mermaid sequence diagrams illustrating system interactions, oracle updates, rebase execution, and user flows.
+- **Class Diagrams**: See [docs/UML-Class-Diagram.md](docs/UML-Class-Diagram.md) for contract structure diagrams.
 
 ---
 
