@@ -11,13 +11,30 @@
 # Investment Journey Overview
 
 This section provides a simplified, high-level view of how an investment moves from fiat deposit to on-chain value creation and final redemption.
-| &nbsp; | &nbsp;  |
-|--------|-----------|
-| <img src="./images/step01.png" alt="Depositing fiat" width="200px"> |**Depositing fiat** <br> The investor begins by depositing fiat currency into the platform. This deposit is held by the financial institution or on/off-ramp partner before entering the tokenization flow. |
-| <img src="./images/step02.png" alt="Obtaining tokenized deposit" width="200px"> | **Obtaining tokenized deposit** <br> The fiat deposit is converted into a digital representation known as a tokenized deposit. This on-chain token reflects the investor’s claim to the underlying real-world funds. |
-|<img src="./images/step03.png" alt="Investment pool" width="200px"> |**Investment pool** <br> The investor’s tokenized deposit is transferred into the investment pool smart contract. In exchange, the investor receives pool tokens representing their proportional share of the pool.|
-|<img src="./images/step04.png" alt="Pool value increases" width="200px"> |**Pool value increases** <br> As the underlying assets generate yield, the pool’s unit price increases over time. The oracle feeds updated pricing and performance data to the smart contract, ensuring accurate valuation.|
-|<img src="./images/step05.png" alt="Redeeming token" width="200px"> |**Redeeming token** <br> The investor converts their tokenized deposit back into fiat currency through the off-ramp partner. Finally, the funds are transferred back to the investor’s traditional bank account.|
+
+<table>
+<tr>
+<td><img src="./images/step01.png" alt="Depositing fiat" width="200px"></td>
+<td><strong>Depositing fiat</strong><br>The investor begins by depositing fiat currency into the platform. This deposit is held by the financial institution or on/off-ramp partner before entering the tokenization flow.</td>
+</tr>
+<tr>
+<td><img src="./images/step02.png" alt="Obtaining tokenized deposit" width="200px"></td>
+<td><strong>Obtaining tokenized deposit</strong><br>The fiat deposit is converted into a digital representation known as a tokenized deposit. This on-chain token reflects the investor's claim to the underlying real-world funds.</td>
+</tr>
+<tr>
+<td><img src="./images/step03.png" alt="Investment pool" width="200px"></td>
+<td><strong>Investment pool</strong><br>The investor's tokenized deposit is transferred into the investment pool smart contract. In exchange, the investor receives pool tokens representing their proportional share of the pool.</td>
+</tr>
+<tr>
+<td><img src="./images/step04.png" alt="Pool value increases" width="200px"></td>
+<td><strong>Pool value increases</strong><br>As the underlying assets generate yield, the pool's unit price increases over time. The oracle feeds updated pricing and performance data to the smart contract, ensuring accurate valuation.</td>
+</tr>
+<tr>
+<td><img src="./images/step05.png" alt="Redeeming token" width="200px"></td>
+<td><strong>Redeeming token</strong><br>The investor converts their tokenized deposit back into fiat currency through the off-ramp partner. Finally, the funds are transferred back to the investor's traditional bank account.</td>
+</tr>
+</table>
+
 ---
 
 > **Note:** In a real-world implementation, the investor would begin by depositing fiat, which is then converted into a tokenized deposit by a licensed financial institution.  
