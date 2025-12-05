@@ -40,8 +40,6 @@ This section provides a simplified, high-level view of how an investment moves f
 > **Note:** In a real-world implementation, the investor would begin by depositing fiat, which is then converted into a tokenized deposit by a licensed financial institution.  
 > This project does **not** cover the fiat-to-token conversion process and starts from the point where the ERC-20 tokenized deposit already exists on-chain.
 
-**Rendex** is a simple Web3 simulation of an investment flow using a rebasing ERC-20 token. It mimics how users earn yield on invested funds, with returns based on a post-fixed rate tied to **CDI** — a Brazilian benchmark interest rate used in fixed-income financial products. The token balance grows daily through smart contract-controlled rebases, using an oracle-fed CDI value to simulate on-chain yield.
-
 ---
 
 ## 🔍 Overview
