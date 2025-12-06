@@ -116,13 +116,47 @@ For detailed Mermaid sequence diagrams with multiple views, see [docs/sequence-d
 ## 📂 Folder Structure
 
 ```
-/frontend
-├── /components       # UI components like WalletConnect, TokenPanel
-├── /lib              # wagmi setup, ABI files, constants
-├── /pages            # Next.js pages
-├── /styles           # Tailwind CSS
-├── .env.local        # Alchemy key (not committed)
-├── README.md
+Rendex/
+├── contracts/              # Smart contracts source code
+│   ├── CDIOracle.sol       # CDI Oracle contract
+│   ├── RendexToken.sol     # Main rebasing token contract
+│   └── interfaces/
+│       └── ICDIOracle.sol  # Oracle interface
+├── scripts/                # Deployment and utility scripts
+│   ├── deploy.ts           # Contract deployment script
+│   └── test-connection.ts  # Connection testing script
+├── test/                   # Smart contract tests
+│   └── RendexToken.test.ts # Token contract tests
+├── oracle-service/        # Off-chain oracle service
+│   ├── index.js            # Main oracle service
+│   ├── lambda-oracle.js    # AWS Lambda version
+│   ├── test-oracle.js      # Oracle testing script
+│   ├── Dockerfile          # Oracle service container
+│   ├── package.json        # Oracle service dependencies
+│   └── README.md           # Oracle service documentation
+├── docs/                   # Project documentation
+│   ├── sequence-diagram.md # Mermaid sequence diagrams
+│   ├── UML-Class-Diagram.md # Class diagram documentation
+│   └── contracts.puml     # PlantUML contract diagram
+├── images/                 # Project images and diagrams
+│   ├── class_diagram.png   # Class diagram image
+│   ├── sequence_diagram.png # Sequence diagram image
+│   └── step01-06.png       # Investment journey images
+├── artifacts/              # Compiled contracts (generated)
+├── cache/                  # Hardhat cache (generated)
+├── typechain-types/        # TypeScript types (generated)
+├── hardhat.config.ts       # Hardhat configuration
+├── tsconfig.json           # TypeScript configuration
+├── package.json            # Project dependencies
+├── docker-compose.yml      # Docker Compose configuration
+├── Dockerfile              # Production Docker image
+├── Dockerfile.dev          # Development Docker image
+├── Makefile                # Make commands for Docker
+├── env.example             # Environment variables template
+├── DEPLOYMENT_GUIDE.md     # Deployment instructions
+├── README.md               # This file
+├── README-Contracts.md     # Contract documentation
+└── README-Docker.md        # Docker documentation
 ```
 
 ---
