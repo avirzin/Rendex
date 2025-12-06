@@ -86,8 +86,21 @@ This section provides a simplified, high-level view of how an investment moves f
 
 ### Diagrams
 
-- **Sequence Diagrams**: See [docs/sequence-diagram.md](docs/sequence-diagram.md) for detailed Mermaid sequence diagrams illustrating system interactions, oracle updates, rebase execution, and user flows.
-- **Class Diagrams**: See [docs/UML-Class-Diagram.md](docs/UML-Class-Diagram.md) for contract structure diagrams.
+#### Class Diagram
+
+The following class diagram illustrates the architecture of the Rendex smart contracts, showing the relationship between `RendexToken`, `CDIOracle`, and the `ICDIOracle` interface:
+
+![Class Diagram](./images/class_diagram.png)
+
+For a detailed view and Mermaid source code, see [docs/UML-Class-Diagram.md](docs/UML-Class-Diagram.md).
+
+#### Sequence Diagram
+
+The following sequence diagram illustrates the complete system flow, including oracle updates, user interactions, rebase execution, and redemption processes:
+
+![Sequence Diagram](./images/sequence_diagram.png)
+
+For detailed Mermaid sequence diagrams with multiple views, see [docs/sequence-diagram.md](docs/sequence-diagram.md).
 
 ---
 
