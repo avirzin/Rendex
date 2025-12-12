@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This project serves as the final submission for the "EVM Chain Certification" program offered by Alchemy University. The investment use case presented herein was selected as the capstone project due to its foundational simplicity, which provides a clear and accessible framework for demonstrating core blockchain development principles. However, the implementation introduces several nuanced complexities, particularly in the integration of an off-chain oracle mechanism that bridges traditional financial data sources with on-chain smart contract execution. The comprehensive investment lifecycle—encompassing tokenization, yield accrual through rebasing mechanisms, and redemption processes—offers a holistic opportunity to synthesize and apply the diverse technical competencies acquired throughout the certification curriculum.
+This project serves as the final submission for the "EVM Chain Certification" program offered by Alchemy University. The investment use case presented herein was selected as the Capstone Project due to its foundational simplicity, which provides a clear and accessible framework for demonstrating core blockchain development principles. However, the implementation introduces several nuanced complexities, particularly in the integration of an off-chain oracle mechanism that bridges traditional financial data sources with on-chain smart contract execution. The comprehensive investment lifecycle—encompassing tokenization, yield accrual through rebasing mechanisms, and redemption processes—offers a holistic opportunity to synthesize and apply the diverse technical competencies acquired throughout the certification curriculum.
 
 ## Project Description
 
@@ -12,7 +12,7 @@ This project serves as the final submission for the "EVM Chain Certification" pr
 >
 > The modeled asset in this project I understand behaves economically as an investment product and would likely be characterized as a **security** under Brazilian regulation.  
 > In a real market implementation, a yield-bearing tokenized deposit would not function as a stablecoin, but rather as a financial investment whose return is tied to the performance of underlying assets.  
-> As such, it would be subject to Brazilian taxes applicable to investments, including **Imposto de Renda (IR)** and **IOF**, depending on the final structure adopted.
+> As such, it would be subject to Brazilian taxes applicable to investments, including **Imposto de Renda (IR)** and **IOF**, depending on the final structure adopted (assuming that it is being launched in Brazil).
 
 
 ## Investment Journey Overview
@@ -45,7 +45,7 @@ This section provides a simplified, high-level view of how an investment moves f
 ---
 
 > **Note:** In a real-world implementation, the investor would begin by depositing fiat, which is then converted into a tokenized deposit by a licensed financial institution.  
-> This project does **not** cover the fiat-to-token conversion process and starts from the point where the ERC-20 tokenized deposit already exists on-chain.
+> This project does **not** cover the fiat-to-token (on-ramp) conversion process and starts from the point where the ERC-20 tokenized deposit already exists on-chain.
 
 ---
 
@@ -117,46 +117,16 @@ For detailed Mermaid sequence diagrams with multiple views, see [docs/sequence-d
 
 ```
 Rendex/
-├── contracts/              # Smart contracts source code
-│   ├── CDIOracle.sol       # CDI Oracle contract
-│   ├── RendexToken.sol     # Main rebasing token contract
-│   └── interfaces/
-│       └── ICDIOracle.sol  # Oracle interface
-├── scripts/                # Deployment and utility scripts
-│   ├── deploy.ts           # Contract deployment script
-│   └── test-connection.ts  # Connection testing script
-├── test/                   # Smart contract tests
-│   └── RendexToken.test.ts # Token contract tests
-├── oracle-service/        # Off-chain oracle service
-│   ├── index.js            # Main oracle service
-│   ├── lambda-oracle.js    # AWS Lambda version
-│   ├── test-oracle.js      # Oracle testing script
-│   ├── Dockerfile          # Oracle service container
-│   ├── package.json        # Oracle service dependencies
-│   └── README.md           # Oracle service documentation
-├── docs/                   # Project documentation
-│   ├── sequence-diagram.md # Mermaid sequence diagrams
-│   ├── UML-Class-Diagram.md # Class diagram documentation
-│   └── contracts.puml     # PlantUML contract diagram
-├── images/                 # Project images and diagrams
-│   ├── class_diagram.png   # Class diagram image
-│   ├── sequence_diagram.png # Sequence diagram image
-│   └── step01-06.png       # Investment journey images
-├── artifacts/              # Compiled contracts (generated)
-├── cache/                  # Hardhat cache (generated)
-├── typechain-types/        # TypeScript types (generated)
-├── hardhat.config.ts       # Hardhat configuration
-├── tsconfig.json           # TypeScript configuration
-├── package.json            # Project dependencies
-├── docker-compose.yml      # Docker Compose configuration
-├── Dockerfile              # Production Docker image
-├── Dockerfile.dev          # Development Docker image
-├── Makefile                # Make commands for Docker
-├── env.example             # Environment variables template
-├── DEPLOYMENT_GUIDE.md     # Deployment instructions
-├── README.md               # This file
-├── README-Contracts.md     # Contract documentation
-└── README-Docker.md        # Docker documentation
+├── artifacts/        # Compiled contracts (generated)
+├── cache/            # Hardhat cache (generated)
+├── contracts/        # Smart contracts source code
+├── docs/             # Project documentation (diagrams, UML, etc.)
+├── images/           # Images and diagrams used in documentation
+├── node_modules/     # NPM dependencies (generated)
+├── oracle-service/   # Off-chain oracle service (Node.js / Lambda)
+├── scripts/          # Deployment and utility scripts
+├── test/             # Smart contract tests
+└── typechain-types/  # Generated TypeScript types
 ```
 
 ---
