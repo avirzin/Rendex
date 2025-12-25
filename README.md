@@ -2,14 +2,18 @@
 
 ## Introduction
 
-This project serves as the final submission for the "EVM Chain Certification" program offered by Alchemy University. The investment use case presented herein was selected as the Capstone Project due to its foundational simplicity, which provides a clear and accessible framework for demonstrating core blockchain development principles. However, the implementation introduces several nuanced complexities, particularly in the integration of an off-chain oracle mechanism that bridges traditional financial data sources with on-chain smart contract execution. The comprehensive investment lifecycle—encompassing tokenization, yield accrual through rebasing mechanisms, and redemption processes offers a holistic opportunity to synthesize and apply the diverse technical competencies acquired throughout the certification curriculum.
+This project serves as the final submission for the "EVM Chain Certification" progoram offered by Alchemy University. The investment use case presented herein was selected as the Capstone Project due to its foundational simplicity, which provides a clear and accessible framework for demonstrating core blockchain development principles. However, the implementation introduces several nuanced complexities, particularly in the integration of an off-chain oracle mechanism that bridges traditional financial data sources with on-chain smart contract execution. The comprehensive investment lifecycle—encompassing tokenization, yield accrual through rebasing mechanisms, and redemption processes offers a holistic opportunity to synthesize and apply the diverse technical competencies acquired throughout the certification curriculum.
 
 ## Project Description
 
-<table>
+<table style="border-collapse: collapse; border: none; width: 100%;">
   <tr>
-    <td><img src="./images/retro_guy_working.png" alt="Retro guy working" width="800px"></td>
-    <td><b>Rendex</b> is a simple Web3 simulation of an investment flow using a rebasing ERC-20 token (RDX). It mimics how users earn yield on invested funds, with returns based on a post-fixed rate tied to <b>CDI</b>, a Brazilian benchmark interest rate used in fixed-income financial products. The token balance grows daily through smart contract-controlled rebases, using an oracle-fed CDI value to simulate on-chain yield.</td>
+    <td style="border: none; width: 34%; vertical-align: top;">
+      <img src="./images/retro_guy_working.png" alt="Retro guy working" style="width: 100%; max-width: 800px;">
+    </td>
+    <td style="border: none; width: 67%; vertical-align: top;">
+      <b>Rendex</b> is a simple Web3 simulation of an investment flow using a rebasing ERC-20 token (RDX). It mimics how users earn yield on invested funds, with returns based on a post-fixed rate tied to <b>CDI</b>, a Brazilian benchmark interest rate used in fixed-income financial products. The token balance grows daily through smart contract-controlled rebases, using an oracle-fed CDI value to simulate on-chain yield.
+    </td>
   </tr>
 </table>
 
