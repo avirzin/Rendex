@@ -6,16 +6,12 @@ This project serves as the final submission for the "EVM Chain Certification" pr
 
 ## Project Description
 
-<table style="border-collapse: collapse; border: none; width: 100%;">
-  <tr>
-    <td style="border: none; width: 34%; vertical-align: top;">
-      <img src="./images/retro_guy_working.png" alt="Retro guy working" style="width: 100%; max-width: 800px;">
-    </td>
-    <td style="border: none; width: 67%; vertical-align: top;">
-      <b>Rendex</b> is a simple Web3 simulation of an investment flow using a rebasing ERC-20 token (RDX). It mimics how users earn yield on invested funds, with returns based on a post-fixed rate tied to <b>CDI</b>, a Brazilian benchmark interest rate used in fixed-income financial products. The token balance grows daily through smart contract-controlled rebases, using an oracle-fed CDI value to simulate on-chain yield.
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <img src="./images/workspace.png" alt="Workspace screenshot" width="800px">
+</p>
+
+
+<b>Rendex</b> is a simple Web3 simulation of an investment flow using a rebasing ERC-20 token (RDX). It mimics how users earn yield on invested funds, with returns based on a post-fixed rate tied to <b>CDI</b>, a Brazilian benchmark interest rate used in fixed-income financial products. The token balance grows daily through smart contract-controlled rebases, using an oracle-fed CDI value to simulate on-chain yield.
 
 
 > ⚖️ **Regulatory Notice**
