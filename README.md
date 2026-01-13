@@ -234,44 +234,11 @@ PRIVATE_KEY=your_private_key_for_deployment
 ETHERSCAN_API_KEY=your_etherscan_api_key
 ```
 
-#### Customizing Services
-
-Edit `docker-compose.override.yml` to enable additional services:
-
-```yaml
-# Uncomment to enable Redis
-redis:
-  ports:
-    - "6379:6379"
-
-# Uncomment to enable PostgreSQL
-postgres:
-  ports:
-    - "5432:5432"
-
-# Uncomment to enable Hardhat node
-hardhat-node:
-  ports:
-    - "8545:8545"
-```
-
 ### Docker Architecture
 
 #### Development Environment
 
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Frontend Dev  │    │   Hardhat Node  │    │     Redis       │
-│   (Port 3001)   │    │   (Port 8545)   │    │   (Port 6379)   │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         └───────────────────────┼───────────────────────┘
-                                 │
-                    ┌─────────────────┐
-                    │  Docker Network │
-                    │  rendex-network │
-                    └─────────────────┘
-```
+![Docker Architecture diagram](./images/docker_architecture.png)
 
 ### Docker Troubleshooting
 
