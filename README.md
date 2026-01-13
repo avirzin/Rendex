@@ -203,7 +203,107 @@ make down           # Stop all services
 make clean          # Clean up containers and images
 ```
 
-For detailed Docker documentation, see [README-Docker.md](README-Docker.md).
+### Docker Files Overview
+
+| File | Purpose |
+|------|---------|
+| `Dockerfile` | Production-optimized multi-stage build |
+| `Dockerfile.dev` | Development environment with hot reloading |
+| `docker-compose.yml` | Main orchestration file |
+| `docker-compose.override.yml` | Development-specific overrides |
+| `.dockerignore` | Files excluded from Docker build context |
+| `Makefile` | Convenient commands for common operations |
+
+### Docker Configuration
+
+#### Environment Variables
+
+Create a `.env` file in the project root:
+
+```env
+# Database (if using PostgreSQL)
+POSTGRES_DB=rendex
+POSTGRES_USER=rendex_user
+POSTGRES_PASSWORD=your_secure_password
+
+# Redis (if using Redis)
+REDIS_PASSWORD=your_redis_password
+
+# Blockchain
+PRIVATE_KEY=your_private_key_for_deployment
+ETHERSCAN_API_KEY=your_etherscan_api_key
+```
+
+#### Customizing Services
+
+Edit `docker-compose.override.yml` to enable additional services:
+
+```yaml
+# Uncomment to enable Redis
+redis:
+  ports:
+    - "6379:6379"
+
+# Uncomment to enable PostgreSQL
+postgres:
+  ports:
+    - "5432:5432"
+
+# Uncomment to enable Hardhat node
+hardhat-node:
+  ports:
+    - "8545:8545"
+```
+
+### Docker Architecture
+
+#### Development Environment
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Frontend Dev  │    │   Hardhat Node  │    │     Redis       │
+│   (Port 3001)   │    │   (Port 8545)   │    │   (Port 6379)   │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+         └───────────────────────┼───────────────────────┘
+                                 │
+                    ┌─────────────────┐
+                    │  Docker Network │
+                    │  rendex-network │
+                    └─────────────────┘
+```
+
+### Docker Troubleshooting
+
+1. **Port already in use:**
+   ```bash
+   # Check what's using the port
+   lsof -i :3000
+   
+   # Stop conflicting services
+   docker-compose down
+   ```
+
+2. **Permission issues:**
+   ```bash
+   # Fix file permissions
+   sudo chown -R $USER:$USER .
+   ```
+
+3. **Build cache issues:**
+   ```bash
+   # Clean build cache
+   docker-compose build --no-cache
+   ```
+
+4. **Container won't start:**
+   ```bash
+   # Check logs
+   docker-compose logs frontend-dev
+   
+   # Check container status
+   docker-compose ps
+   ```
 
 ### Oracle Service Setup
 
@@ -244,13 +344,117 @@ npm run test:frontend
 
 ## 🚀 Deployment
 
-```bash
-# Deploy to Sepolia testnet
-npm run deploy:sepolia
+### Prerequisites
 
-# Verify contracts on Etherscan
-npm run verify:sepolia
+1. **Infura Account**: Get a free Infura API key from https://infura.io/
+2. **MetaMask Wallet**: Create a new wallet and get the private key
+3. **Sepolia ETH**: Get testnet ETH from a faucet (https://sepoliafaucet.com/)
+4. **Etherscan API Key**: Get from https://etherscan.io/apis (optional, for verification)
+
+### Step 1: Configure Environment
+
+1. Edit the `.env` file in the project root:
+   ```bash
+   # Replace YOUR_PROJECT_ID with your Infura project ID
+   RPC_URL=https://sepolia.infura.io/v3/YOUR_PROJECT_ID
+   
+   # Replace with your MetaMask private key (without 0x prefix)
+   PRIVATE_KEY=your_private_key_here
+   
+   # Optional: For contract verification
+   ETHERSCAN_API_KEY=your_etherscan_api_key_here
+   ```
+
+2. Make sure you have Sepolia ETH in your wallet for gas fees.
+
+### Step 2: Deploy Contracts
+
+Run the deployment script:
+
+```bash
+npm run deploy:sepolia
 ```
+
+The script will:
+- Deploy CDIOracle contract
+- Deploy RendexToken contract
+- Set up oracle permissions
+- **Automatically save contract addresses to .env**
+
+After deployment, your `.env` will be updated with:
+- `CDI_ORACLE_ADDRESS=0x...`
+- `RENDEX_TOKEN_ADDRESS=0x...`
+- `DEPLOYER_ADDRESS=0x...`
+
+### Step 3: Verify Contracts (Optional)
+
+```bash
+npx hardhat verify --network sepolia <CDI_ORACLE_ADDRESS> 1000 <DEPLOYER_ADDRESS>
+npx hardhat verify --network sepolia <RENDEX_TOKEN_ADDRESS> "Rendex Token" "RDX" <CDI_ORACLE_ADDRESS> 1000000000000000000000000 <DEPLOYER_ADDRESS>
+```
+
+### Step 4: Configure Oracle Service
+
+1. Copy the oracle service environment template:
+   ```bash
+   cp oracle-service/env.example oracle-service/.env
+   ```
+
+2. Edit `oracle-service/.env`:
+   ```bash
+   # Use the same RPC_URL from root .env
+   RPC_URL=https://sepolia.infura.io/v3/YOUR_PROJECT_ID
+   
+   # Use a different wallet for the oracle (or same one)
+   PRIVATE_KEY=oracle_wallet_private_key_here
+   
+   # Use the deployed CDI Oracle address
+   CDI_ORACLE_ADDRESS=0x... # From Step 2
+   ```
+
+### Step 5: Deploy AWS Lambda
+
+1. Make sure AWS CLI is configured:
+   ```bash
+   aws configure
+   ```
+
+2. Navigate to oracle-service directory:
+   ```bash
+   cd oracle-service
+   ```
+
+3. Set environment variables and deploy:
+   ```bash
+   export RPC_URL="https://sepolia.infura.io/v3/YOUR_PROJECT_ID"
+   export PRIVATE_KEY="oracle_wallet_private_key"
+   export CDI_ORACLE_ADDRESS="0x..." # From deployment
+   
+   ./deploy-lambda.sh
+   ```
+
+The Lambda will be scheduled to run daily at midnight UTC.
+
+### Step 6: Test Oracle
+
+Test the Lambda function manually:
+```bash
+aws lambda invoke --function-name rendex-oracle-update-cdi-prod --payload '{}' response.json
+cat response.json
+```
+
+Or test locally:
+```bash
+cd oracle-service
+npm run manual
+```
+
+### Troubleshooting
+
+- **Insufficient funds**: Make sure your wallet has Sepolia ETH
+- **RPC errors**: Verify your Infura key is correct
+- **Deployment fails**: Check network connectivity and gas prices
+- **Lambda errors**: Check CloudWatch logs in AWS Console
 
 ---
 
@@ -270,6 +474,131 @@ The monthly CDI rate is converted to daily compound rate: `daily_rate = (1 + mon
 - `updateCDI(uint256 newRate)`: Update the CDI rate (admin only)
 - `rebase()`: Trigger daily rebase (admin only)
 - `setAdmin(address newAdmin)`: Transfer admin role (admin only)
+
+---
+
+## 📋 Smart Contracts
+
+### Architecture Overview
+
+```
+┌─────────────────┐    ┌─────────────────┐
+│   CDIOracle     │    │  RendexToken    │
+│                 │    │                 │
+│ • Stores CDI    │◄───┤ • Rebasing      │
+│ • Updates rates │    │ • Yield sim     │
+│ • Validates     │    │ • ERC-20        │
+└─────────────────┘    └─────────────────┘
+```
+
+### RendexToken Contract
+
+**Purpose**: Main rebasing ERC-20 token that simulates yield based on CDI rates.
+
+**Key Features**:
+- ✅ **Daily rebases** based on CDI rate (120% of CDI)
+- ✅ **Oracle integration** for real-time CDI data
+- ✅ **Share-based rebasing** for accurate yield simulation
+- ✅ **Pausable** for emergency situations
+- ✅ **Admin controls** for oracle updates
+
+**Core Functions**:
+```solidity
+// Execute daily rebase
+function rebase() external onlyRebaser rebaseReady
+
+// Get current CDI rate
+function getCurrentCDI() public view returns (uint256)
+
+// Calculate rebase rate (120% of CDI)
+function calculateRebaseRate() public view returns (uint256)
+
+// Get rebase statistics
+function getRebaseStats() external view returns (...)
+```
+
+**Rebase Mechanism**:
+1. **Daily Interval**: Rebase can only be executed once per day
+2. **CDI Rate**: Fetched from oracle (e.g., 10% = 1000 basis points)
+3. **Rebase Rate**: 120% of CDI (e.g., 12% for 10% CDI)
+4. **Share Calculation**: `new_shares = old_shares * (1 + rebase_rate)`
+
+### CDIOracle Contract
+
+**Purpose**: Oracle contract that stores and provides CDI rate data.
+
+**Key Features**:
+- ✅ **Rate validation** (0-50% range)
+- ✅ **Authorized updaters** system
+- ✅ **Staleness detection** (7-day threshold)
+- ✅ **Emergency updates** for stale rates
+- ✅ **Health monitoring**
+
+**Core Functions**:
+```solidity
+// Update CDI rate
+function updateCDI(uint256 _newCDI) external onlyAuthorizedUpdater
+
+// Get current CDI with metadata
+function getCDIWithMetadata() external view returns (...)
+
+// Check oracle health
+function isHealthy() external view returns (bool)
+
+// Emergency update for stale rates
+function emergencyUpdateCDI(uint256 _newCDI) external onlyOwner
+```
+
+### Configuration
+
+**CDI Rate System**:
+- **Basis Points**: 1000 = 10%, 1500 = 15%, etc.
+- **Range**: 0-5000 basis points (0-50%)
+- **Update Frequency**: Daily (configurable)
+- **Staleness Threshold**: 7 days
+
+**Rebase Parameters**:
+- **Interval**: 24 hours (1 day)
+- **Multiplier**: 120% of CDI rate
+- **Example**: 10% CDI → 12% daily rebase
+
+**Token Parameters**:
+- **Name**: "Rendex Token"
+- **Symbol**: "RDX"
+- **Initial Supply**: 1,000,000 tokens
+- **Decimals**: 18
+
+### Yield Simulation
+
+**How It Works**:
+1. **CDI Rate**: Brazilian benchmark interest rate (e.g., 10%)
+2. **Daily Rebase**: Token balances increase daily
+3. **Compounding**: Previous day's gains are included in next rebase
+4. **Simulation**: No real yield, just token balance increases
+
+**Example Calculation**:
+```
+Initial Balance: 1000 RDX
+CDI Rate: 10% (1000 basis points)
+Rebase Rate: 12% (120% of CDI)
+
+Day 1: 1000 * (1 + 0.12) = 1120 RDX
+Day 2: 1120 * (1 + 0.12) = 1254.4 RDX
+Day 30: ~34,000 RDX (compounded daily)
+```
+
+### Security Features
+
+**Access Control**:
+- **Owner-only functions**: Oracle updates, pausing
+- **Authorized updaters**: CDI rate updates
+- **Rebaser permissions**: Daily rebase execution
+
+**Safety Mechanisms**:
+- **Rate validation**: CDI rates within safe bounds
+- **Staleness detection**: Automatic detection of old rates
+- **Emergency pause**: Ability to pause all operations
+- **Reentrancy protection**: Guards against reentrancy attacks
 
 ---
 
