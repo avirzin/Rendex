@@ -60,29 +60,29 @@ class CDIOracleService {
   }
 
   /**
-   * BCB sgs.12 returns annual CDI percentage (e.g., 13.65 means 13.65% p.a.)
+   * BCB sgs.12 returns the daily CDI rate as a percentage (e.g., 0.0534 means 0.0534%/day)
    */
-  getAnnualCDI(cdiFromAPI) {
-    console.log(`📊 Annual CDI from API: ${cdiFromAPI}%`);
+  getDailyCDI(cdiFromAPI) {
+    console.log(`📊 Daily CDI from API: ${cdiFromAPI}%`);
     return cdiFromAPI;
   }
 
   /**
    * Apply CDI multiplier (120% of CDI)
    */
-  applyCDIMultiplier(annualCDI) {
-    const adjustedCDI = (annualCDI * CONFIG.CDI_MULTIPLIER) / CONFIG.MULTIPLIER_DENOMINATOR;
+  applyCDIMultiplier(dailyCDI) {
+    const adjustedCDI = (dailyCDI * CONFIG.CDI_MULTIPLIER) / CONFIG.MULTIPLIER_DENOMINATOR;
     console.log(`📈 Applied ${CONFIG.CDI_MULTIPLIER}% multiplier: ${adjustedCDI.toFixed(4)}%`);
     return adjustedCDI;
   }
 
   /**
-   * Convert annual percentage to basis points (e.g., 13.65 → 1365).
-   * Contract stores CDI as basis points where 10000 = 100%, 1000 = 10%.
+   * Convert daily percentage to basis points (e.g., 0.0641 → 6).
+   * Contract stores CDI as daily basis points where 100 = 1%, 1 = 0.01%.
    */
-  convertToContractFormat(annualPercent) {
-    const basisPoints = Math.round(annualPercent * 100);
-    console.log(`🔢 Converting ${annualPercent}% → ${basisPoints} basis points`);
+  convertToContractFormat(dailyPercent) {
+    const basisPoints = Math.round(dailyPercent * 100);
+    console.log(`🔢 Converting ${dailyPercent}% → ${basisPoints} basis points`);
     return basisPoints;
   }
 
@@ -114,14 +114,14 @@ class CDIOracleService {
     try {
       console.log('🚀 Starting CDI update process...');
       
-      // Fetch annual CDI from BCB API (e.g., 13.65 = 13.65% p.a.)
+      // Fetch daily CDI from BCB API (e.g., 0.0534 = 0.0534%/day)
       const cdiFromAPI = await this.fetchCDIFromAPI();
 
-      // Keep as annual rate
-      const annualCDI = this.getAnnualCDI(cdiFromAPI);
+      // Keep as daily rate
+      const dailyCDI = this.getDailyCDI(cdiFromAPI);
 
       // Apply multiplier
-      const adjustedCDI = this.applyCDIMultiplier(annualCDI);
+      const adjustedCDI = this.applyCDIMultiplier(dailyCDI);
 
       // Convert to basis points for contract
       const contractValue = this.convertToContractFormat(adjustedCDI);

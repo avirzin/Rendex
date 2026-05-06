@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { ethers } = require('ethers');
 const axios = require('axios');
 const cron = require('node-cron');
@@ -61,10 +62,10 @@ class CDIOracleService {
   }
 
   /**
-   * BCB sgs.12 returns annual CDI percentage (e.g., 13.65 means 13.65% p.a.)
+   * BCB sgs.12 returns the daily CDI rate as a percentage (e.g., 0.0534 means 0.0534%/day)
    */
-  getAnnualCDI(cdiFromAPI) {
-    console.log(`📊 Annual CDI from API: ${cdiFromAPI}%`);
+  getDailyCDI(cdiFromAPI) {
+    console.log(`📊 Daily CDI from API: ${cdiFromAPI}%`);
     return cdiFromAPI;
   }
 
@@ -135,11 +136,11 @@ class CDIOracleService {
       // 1. Fetch annual CDI from BCB API (e.g., 13.65 = 13.65% p.a.)
       const cdiFromAPI = await this.fetchCDIFromAPI();
 
-      // 2. Keep as annual rate
-      const annualCDI = this.getAnnualCDI(cdiFromAPI);
+      // 2. Keep as daily rate
+      const dailyCDI = this.getDailyCDI(cdiFromAPI);
 
       // 3. Apply multiplier
-      const adjustedCDI = this.applyCDIMultiplier(annualCDI);
+      const adjustedCDI = this.applyCDIMultiplier(dailyCDI);
 
       // 4. Convert to basis points for contract
       const contractCDI = this.convertToContractFormat(adjustedCDI);

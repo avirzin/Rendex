@@ -92,12 +92,13 @@ contract RendexToken is ERC20, Ownable, ReentrancyGuard, Pausable {
     }
     
     /**
-     * @dev Calculate daily rebase rate based on annual CDI
-     * @return rebaseRate in basis points representing the daily fraction of annual CDI
+     * @dev Calculate rebase rate based on CDI
+     * Oracle feeds the daily CDI rate in basis points, so no further time conversion is needed.
+     * @return rebaseRate in basis points (e.g., 7 = 0.07%/day for ~0.053% daily CDI * 120%)
      */
     function calculateRebaseRate() public view returns (uint256) {
         uint256 cdiRate = getCurrentCDI();
-        return (cdiRate * CDI_MULTIPLIER) / (MULTIPLIER_DENOMINATOR * 365);
+        return (cdiRate * CDI_MULTIPLIER) / MULTIPLIER_DENOMINATOR;
     }
     
     /**

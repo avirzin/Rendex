@@ -1,0 +1,18 @@
+{
+  "network": "sepolia",
+  "deployer": "0x8Edc25658FB3E000f16F7122BB56a4F6cF860A38",
+  "contracts": {
+    "cdiOracle": "0x9a8FfF63990Efd2424536247e1827300847201A6",
+    "rendexToken": "0x702504aB0DE0cf3646265dCeE9015017ed435880"
+  },
+  "token": {
+    "name": "Rendex Token",
+    "symbol": "RDX",
+    "initialSupply": "1000000.0"
+  },
+  "oracle": {
+    "initialCDI": 6,
+    "cdiPercent": 0.06
+  },
+  "timestamp": "2026-05-06T17:16:14.718Z"
+}

@@ -12,6 +12,7 @@ interface ICDIOracle {
     +getCDI(): uint256
     +getLastUpdateTime(): uint256
     +getCDIWithMetadata(): (uint256, uint256, bool)
+    +isStale(): bool
     +isHealthy(): bool
 }
 
@@ -27,7 +28,7 @@ package "Rendex Contracts" {
         +MULTIPLIER_DENOMINATOR: uint256 = 100
         +INITIAL_SHARES_PER_TOKEN: uint256 = 1e18
         
-        +constructor(string, string, address, uint256)
+        +constructor(string, string, address, uint256, address)
         +getCurrentCDI(): uint256
         +calculateRebaseRate(): uint256
         +rebase(): void
@@ -42,7 +43,6 @@ package "Rendex Contracts" {
         +getNextRebaseTime(): uint256
         +isRebaseReady(): bool
         +getRebaseStats(): (uint256, uint256, uint256, uint256, uint256, bool)
-        +_beforeTokenTransfer(address, address, uint256): void
     }
 
     class CDIOracle {
@@ -53,7 +53,7 @@ package "Rendex Contracts" {
         +MIN_CDI_RATE: uint256 = 0
         +STALE_THRESHOLD: uint256 = 604800
         
-        +constructor(uint256)
+        +constructor(uint256, address)
         +getCDI(): uint256
         +getLastUpdateTime(): uint256
         +getCDIWithMetadata(): (uint256, uint256, bool)

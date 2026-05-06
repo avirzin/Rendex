@@ -10,6 +10,7 @@ classDiagram
         +getCDI() uint256
         +getLastUpdateTime() uint256
         +getCDIWithMetadata() (uint256, uint256, bool)
+        +isStale() bool
         +isHealthy() bool
     }
 
@@ -24,7 +25,7 @@ classDiagram
         +MULTIPLIER_DENOMINATOR: uint256 = 100
         +INITIAL_SHARES_PER_TOKEN: uint256 = 1e18
         
-        +constructor(string, string, address, uint256)
+        +constructor(string, string, address, uint256, address)
         +getCurrentCDI() uint256
         +calculateRebaseRate() uint256
         +rebase() void
@@ -126,6 +127,7 @@ classDiagram
 - `getCDI()`: Return current CDI rate
 - `getLastUpdateTime()`: Return last update timestamp
 - `getCDIWithMetadata()`: Return rate with metadata
+- `isStale()`: Return whether the rate is older than 7 days
 - `isHealthy()`: Return oracle health status
 
 ## 🔄 Relationships and Dependencies

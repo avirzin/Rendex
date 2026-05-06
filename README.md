@@ -71,9 +71,8 @@ This section provides a simplified, high-level view of how an investment moves f
 |----------------|------------------------------|------------------------------------|
 | Framework       | Next.js (TypeScript)         | Routing + SSR + scalability        |
 | Wallet Connect  | RainbowKit + Wagmi           | MetaMask and WalletConnect support |
-| Blockchain SDK  | Alchemy SDK                   | Contract calls + enhanced features |
 | Styling         | Tailwind CSS                 | Fast UI development                |
-| Provider        | Alchemy                      | RPC + observability + testnet/mainnet |
+| Provider        | Infura                       | RPC endpoint for Sepolia           |
 | Chain           | Sepolia                      | Testnet for MVP                    |
 
 ---
@@ -297,8 +296,8 @@ npm run test
 ### Prerequisites
 
 1. **Infura Account**: Get a free Infura API key from https://infura.io/
-2. **MetaMask Wallet**: Create a new wallet and get the private key
-3. **Sepolia ETH**: Get testnet ETH from a faucet (https://sepoliafaucet.com/)
+2. **MetaMask Wallet**: Export your private key from MetaMask (Account > Account details > Show private key)
+3. **Sepolia ETH**: Get free testnet ETH from https://www.infura.io/faucet/sepolia
 4. **Etherscan API Key**: Get from https://etherscan.io/apis (optional, for verification)
 
 ### Step 1: Configure Environment
@@ -412,15 +411,17 @@ The CDI rate is fetched from the Brazilian Central Bank API:
 - **Latest Rate:** `https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados/ultimos/1?formato=json`
 - **Historical Data:** `https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados?formato=json&dataInicial=DD/MM/AAAA&dataFinal=DD/MM/AAAA`
 
-The monthly CDI rate is converted to daily compound rate: `daily_rate = (1 + monthly_cdi)^(1/30) - 1`
+The API returns the annual CDI percentage (e.g. `13.65`), which is converted to basis points (`1365`) and stored in the contract. The daily rebase rate is computed as `annual_cdi * 120% / 365`.
 
 ---
 
 ## 👨‍💼 Admin Functions
 
-- `updateCDI(uint256 newRate)`: Update the CDI rate (admin only)
-- `rebase()`: Trigger daily rebase (admin only)
-- `setAdmin(address newAdmin)`: Transfer admin role (admin only)
+- `updateCDI(uint256 newRate)`: Update the CDI rate (authorized updater or owner)
+- `rebase()`: Trigger daily rebase (owner only)
+- `pause()` / `unpause()`: Halt or resume token transfers and rebases (owner only)
+- `updateCDIOracle(address)`: Swap the oracle contract address (owner only)
+- `setAuthorizedUpdater(address, bool)`: Grant or revoke CDI update permission (owner only)
 
 ---
 
@@ -467,8 +468,8 @@ function getRebaseStats() external view returns (...)
 **Rebase Mechanism**:
 1. **Daily Interval**: Rebase can only be executed once per day
 2. **CDI Rate**: Annual rate fetched from oracle (e.g., 13.65% p.a. = 1365 basis points)
-3. **Daily Rate**: `annual_cdi * 120% / 365` (e.g., ~0.045%/day for 13.65% CDI)
-4. **Share Calculation**: `new_shares = old_shares * (1 + daily_rate)`
+3. **Rebase Rate**: `daily_cdi_bp * 120% / 100` (e.g., 6 bp * 120% = 7 bp → 0.07%/day)
+4. **Share Calculation**: `new_shares = old_shares * (1 + rebase_rate)`
 
 ### CDIOracle Contract
 
@@ -506,8 +507,8 @@ function emergencyUpdateCDI(uint256 _newCDI) external onlyOwner
 
 **Rebase Parameters**:
 - **Interval**: 24 hours (1 day)
-- **Multiplier**: 120% of annual CDI, divided by 365 for the daily fraction
-- **Example**: 13.65% annual CDI → ~0.045% daily rebase (~16.4% annual yield)
+- **Multiplier**: 120% of daily CDI rate
+- **Example**: 0.0534%/day CDI → 6 daily basis points → rebase rate of 7 bp → ~0.07%/day (~29% annual, compounded)
 
 **Token Parameters**:
 - **Name**: "Rendex Token"
@@ -526,12 +527,12 @@ function emergencyUpdateCDI(uint256 _newCDI) external onlyOwner
 **Example Calculation**:
 ```
 Initial Balance: 1000 RDX
-Annual CDI Rate: 13.65% (1365 basis points)
-Daily Rebase Rate: 13.65% * 120% / 365 ≈ 0.0449%/day
+Daily CDI from BCB API: 0.0534%/day → 6 daily basis points
+Rebase Rate: 6 * 120% = 7.2 → 7 basis points (0.07%/day)
 
-Day 1:   1000 * (1 + 0.000449) ≈ 1000.45 RDX
-Day 30:  1000 * (1 + 0.000449)^30 ≈ 1013.5 RDX
-Day 365: 1000 * (1 + 0.000449)^365 ≈ 1178.5 RDX (~17.85% annual, compounded)
+Day 1:   1000 * (1 + 0.0007) ≈ 1000.70 RDX
+Day 30:  1000 * (1 + 0.0007)^30 ≈ 1021.3 RDX
+Day 365: 1000 * (1 + 0.0007)^365 ≈ 1292.8 RDX (~29.3% annual, compounded)
 ```
 
 ### Security Features
