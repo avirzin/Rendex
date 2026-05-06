@@ -92,12 +92,12 @@ contract RendexToken is ERC20, Ownable, ReentrancyGuard, Pausable {
     }
     
     /**
-     * @dev Calculate rebase rate based on CDI
-     * @return rebaseRate in basis points (e.g., 1200 = 12% for 120% of 10% CDI)
+     * @dev Calculate daily rebase rate based on annual CDI
+     * @return rebaseRate in basis points representing the daily fraction of annual CDI
      */
     function calculateRebaseRate() public view returns (uint256) {
         uint256 cdiRate = getCurrentCDI();
-        return (cdiRate * CDI_MULTIPLIER) / MULTIPLIER_DENOMINATOR;
+        return (cdiRate * CDI_MULTIPLIER) / (MULTIPLIER_DENOMINATOR * 365);
     }
     
     /**
@@ -105,6 +105,7 @@ contract RendexToken is ERC20, Ownable, ReentrancyGuard, Pausable {
      * Can be called by owner or oracle
      */
     function rebase() external onlyRebaser rebaseReady nonReentrant {
+        require(!cdiOracle.isStale(), "RendexToken: CDI oracle is stale");
         uint256 cdiRate = getCurrentCDI();
         uint256 rebaseRate = calculateRebaseRate();
         

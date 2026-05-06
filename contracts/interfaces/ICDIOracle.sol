@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
 /**
  * @title ICDIOracle
@@ -24,7 +24,7 @@ interface ICDIOracle {
     
     /**
      * @dev Get CDI rate with additional metadata
-     * @return cdiRate Current CDI rate in parts per million (ppm)
+     * @return cdiRate Current CDI rate in basis points (e.g., 1000 = 10%)
      * @return lastUpdate Last update timestamp
      * @return isValid Whether the rate is valid (not stale)
      */
@@ -35,17 +35,11 @@ interface ICDIOracle {
     );
 
     /**
-     * @dev Get CDI rate as percentage (for human readability)
-     * @return CDI rate as percentage with 4 decimal places
+     * @dev Check if the oracle rate is stale (older than threshold)
+     * @return Whether the rate is stale
      */
-    function getCDIAsPercentage() external view returns (uint256);
+    function isStale() external view returns (bool);
 
-    /**
-     * @dev Get CDI rate in basis points (for compatibility)
-     * @return CDI rate in basis points
-     */
-    function getCDIInBasisPoints() external view returns (uint256);
-    
     /**
      * @dev Check if the oracle is functioning properly
      * @return isHealthy Whether the oracle is healthy

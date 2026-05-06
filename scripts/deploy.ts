@@ -1,34 +1,31 @@
 import { ethers } from "hardhat";
+import * as fs from "fs";
 
 async function main() {
-  console.log("🚀 Starting simplified Rendex deployment...");
+  console.log("🚀 Starting Rendex deployment...");
 
-  // Get deployer account
   const [deployer] = await ethers.getSigners();
   console.log("📝 Deploying contracts with account:", deployer.address);
   console.log("💰 Account balance:", ethers.formatEther(await deployer.provider!.getBalance(deployer.address)), "ETH");
 
-  // Deploy CDI Oracle first
+  // Read parameters from .env, with sensible defaults
+  const initialCDI = parseInt(process.env.INITIAL_CDI_RATE || "1000");
+  const tokenName = process.env.TOKEN_NAME || "Rendex Token";
+  const tokenSymbol = process.env.TOKEN_SYMBOL || "RDX";
+  const initialSupply = ethers.parseEther(process.env.INITIAL_SUPPLY || "1000000");
+
+  // Deploy CDI Oracle
   console.log("\n📊 Deploying CDI Oracle...");
   const CDIOracle = await ethers.getContractFactory("CDIOracle");
-  
-  // Initial CDI rate: 10% (1000 basis points)
-  const initialCDI = 1000; // 10% in basis points
   const cdiOracle = await CDIOracle.deploy(initialCDI, deployer.address);
   await cdiOracle.waitForDeployment();
-  
   const cdiOracleAddress = await cdiOracle.getAddress();
   console.log("✅ CDI Oracle deployed to:", cdiOracleAddress);
-  console.log("📈 Initial CDI rate set to:", initialCDI / 100, "%");
+  console.log("📈 Initial CDI rate:", initialCDI, "basis points (", initialCDI / 100, "% p.a.)");
 
-  // Deploy RendexToken directly
+  // Deploy RendexToken
   console.log("\n🪙 Deploying RendexToken...");
   const RendexToken = await ethers.getContractFactory("RendexToken");
-  
-  const tokenName = "Rendex Token";
-  const tokenSymbol = "RDX";
-  const initialSupply = ethers.parseEther("1000000"); // 1M tokens
-  
   const rendexToken = await RendexToken.deploy(
     tokenName,
     tokenSymbol,
@@ -37,24 +34,23 @@ async function main() {
     deployer.address
   );
   await rendexToken.waitForDeployment();
-  
   const tokenAddress = await rendexToken.getAddress();
   console.log("✅ RendexToken deployed to:", tokenAddress);
-  console.log("📝 Token name:", tokenName);
-  console.log("📝 Token symbol:", tokenSymbol);
+  console.log("📝 Token:", tokenName, `(${tokenSymbol})`);
   console.log("💰 Initial supply:", ethers.formatEther(initialSupply), "tokens");
 
-  // Set up oracle permissions
+  // Authorize oracle service wallet if provided
   console.log("\n🔐 Setting up oracle permissions...");
-  
-  // Authorize token to update CDI rates (if needed)
-  const authorizeTx = await cdiOracle.setAuthorizedUpdater(tokenAddress, true);
-  await authorizeTx.wait();
-  console.log("✅ Token authorized to update CDI rates");
+  if (process.env.ORACLE_UPDATER_ADDRESS) {
+    const authorizeTx = await cdiOracle.setAuthorizedUpdater(process.env.ORACLE_UPDATER_ADDRESS, true);
+    await authorizeTx.wait();
+    console.log("✅ Oracle service wallet authorized:", process.env.ORACLE_UPDATER_ADDRESS);
+  } else {
+    console.log("ℹ️  ORACLE_UPDATER_ADDRESS not set — only the deployer wallet can call updateCDI() for now.");
+  }
 
-  // Verify deployments
+  // Print on-chain state
   console.log("\n🔍 Verifying deployments...");
-  
   const oracleStats = await cdiOracle.getOracleStats();
   console.log("📊 Oracle stats:");
   console.log("   - Current CDI:", oracleStats[0].toString(), "basis points");
@@ -66,26 +62,13 @@ async function main() {
   console.log("📊 Token stats:");
   console.log("   - Last rebase time:", new Date(Number(tokenStats[0]) * 1000).toISOString());
   console.log("   - Next rebase time:", new Date(Number(tokenStats[1]) * 1000).toISOString());
-  console.log("   - Rebase count:", tokenStats[2].toString());
   console.log("   - Current CDI:", tokenStats[3].toString(), "basis points");
-  console.log("   - Rebase rate:", tokenStats[4].toString(), "basis points");
-  console.log("   - Rebase ready:", tokenStats[5]);
+  console.log("   - Daily rebase rate:", tokenStats[4].toString(), "basis points");
 
-  // Check token ownership
-  console.log("👑 Token owner:", await rendexToken.owner());
-  console.log("👑 Oracle owner:", await cdiOracle.owner());
-
-  // Deployment summary
-  console.log("\n🎉 Simplified deployment completed successfully!");
-  console.log("=" .repeat(50));
-  console.log("📋 Contract Addresses:");
-  console.log("   CDI Oracle:", cdiOracleAddress);
-  console.log("   RendexToken:", tokenAddress);
-  console.log("=" .repeat(50));
-  
-  // Save deployment info
+  // Save addresses to file so oracle-service can read them
+  const network = (await ethers.provider.getNetwork()).name;
   const deploymentInfo = {
-    network: (await ethers.provider.getNetwork()).name,
+    network,
     deployer: deployer.address,
     contracts: {
       cdiOracle: cdiOracleAddress,
@@ -97,19 +80,28 @@ async function main() {
       initialSupply: ethers.formatEther(initialSupply),
     },
     oracle: {
-      initialCDI: initialCDI,
+      initialCDI,
       cdiPercent: initialCDI / 100,
     },
     timestamp: new Date().toISOString(),
   };
 
-  console.log("\n💾 Deployment info:", JSON.stringify(deploymentInfo, null, 2));
-  
+  fs.mkdirSync("deployments", { recursive: true });
+  fs.writeFileSync(`deployments/${network}.json`, JSON.stringify(deploymentInfo, null, 2));
+
+  console.log("\n🎉 Deployment completed!");
+  console.log("=".repeat(50));
+  console.log("📋 Contract Addresses:");
+  console.log("   CDI Oracle: ", cdiOracleAddress);
+  console.log("   RendexToken:", tokenAddress);
+  console.log("=".repeat(50));
+  console.log(`💾 Addresses saved to deployments/${network}.json`);
+  console.log("👉 Copy CDI_ORACLE_ADDRESS into oracle-service/.env to start the oracle.");
+
   return deploymentInfo;
 }
 
-// Handle errors
 main().catch((error) => {
   console.error("❌ Deployment failed:", error);
   process.exitCode = 1;
-}); 
+});

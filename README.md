@@ -58,7 +58,7 @@ This section provides a simplified, high-level view of how an investment moves f
 ## 🔍 Overview
 
 - **Token Type:** Rebasing ERC-20
-- **Yield Rate:** 120% of CDI (daily rebase, compounded from monthly CDI)
+- **Yield Rate:** 120% of annual CDI, applied as a daily compound rebase
 - **Custody:** Off-chain (abstracted in the simulation)
 - **Chain:** Sepolia (testnet)
 - **Purpose:** Educational / Proof-of-Concept
@@ -87,7 +87,7 @@ This section provides a simplified, high-level view of how an investment moves f
 
 ### Off-Chain Components
 
-- **CDI Oracle Service**: A Node.js service that fetches the current CDI from the [Brazilian Central Bank API](https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados/ultimos/1?formato=json) and updates the on-chain oracle once per day. The monthly CDI rate is converted to a daily compound rate using the formula: `daily_rate = (1 + monthly_cdi)^(1/30) - 1`.
+- **CDI Oracle Service**: A Node.js service that fetches the current annual CDI from the [Brazilian Central Bank API](https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados/ultimos/1?formato=json) and updates the on-chain oracle once per day. The API returns the annual CDI percentage (e.g. `13.65`), which is converted to basis points (`1365`) and stored in the contract.
 - **Rebaser**: A cronjob or script that calls `updateCDI()` and triggers `rebase()` daily to maintain the yield simulation.
 
 ### Diagrams
@@ -139,27 +139,7 @@ Rendex/
 
 ## 🚀 Getting Started
 
-### Option 1: Docker (Recommended)
-
-1. Clone the repo
-2. Start development environment:
-
-```bash
-# Using Makefile (recommended)
-make up-dev
-
-# Or using Docker Compose directly
-docker-compose up -d frontend-dev
-```
-
-3. Access the application at http://localhost:3001
-
-4. View logs:
-```bash
-make logs-frontend-dev
-```
-
-### Option 2: Local Development
+### Option 1: Local blockchain + Oracle (current state)
 
 1. Clone the repo
 2. Install dependencies:
@@ -168,13 +148,29 @@ make logs-frontend-dev
 npm install
 ```
 
-3. Add your Alchemy key to `.env.local`
-
-4. Run the dev server:
+3. Copy `.env` and fill in your values:
 
 ```bash
-npm run dev
+# Already created — just fill in PRIVATE_KEY, RPC_URL, ETHERSCAN_API_KEY
 ```
+
+4. Deploy contracts to Sepolia:
+
+```bash
+npm run deploy:sepolia
+```
+
+5. Copy `CDI_ORACLE_ADDRESS` from `deployments/sepolia.json` into `oracle-service/.env`
+
+6. Start the oracle service:
+
+```bash
+make up-oracle
+```
+
+### Option 2: Frontend (coming soon)
+
+The frontend is not yet implemented. The Docker services for the frontend are present but commented out in `docker-compose.yml`.
 
 ### Docker Commands
 
@@ -182,21 +178,11 @@ npm run dev
 # Show all available Docker commands
 make help
 
-# Development
-make up-dev         # Start development environment
-make build-dev      # Build development image
-make logs-frontend-dev  # View logs
-
 # Oracle Service
-make up-oracle      # Start oracle service only
+make up-oracle      # Start oracle service (requires Hardhat node)
 make oracle-logs    # View oracle service logs
 make oracle-manual  # Trigger manual CDI update
 make oracle-status  # Check oracle service status
-
-# Production
-make build          # Build production image
-make up             # Start production environment
-make deploy-prod    # Deploy to production
 
 # Maintenance
 make down           # Stop all services
@@ -276,11 +262,11 @@ ETHERSCAN_API_KEY=your_etherscan_api_key
 
 The CDI Oracle Service is included in the Docker setup and will automatically start with the development environment. To configure it:
 
-1. **Set environment variables** in your `.env` file:
+1. **Set environment variables** in `oracle-service/.env`:
 ```bash
 RPC_URL=https://sepolia.infura.io/v3/YOUR_INFURA_KEY
-ORACLE_PRIVATE_KEY=your_private_key_here
-CDI_ORACLE_ADDRESS=0x... # Address of deployed CDI Oracle contract
+PRIVATE_KEY=your_oracle_wallet_private_key
+CDI_ORACLE_ADDRESS=0x... # From deployments/sepolia.json after deploy
 ```
 
 2. **Start the oracle service**:
@@ -302,9 +288,6 @@ For detailed oracle service documentation, see [oracle-service/README.md](oracle
 ```bash
 # Run contract tests
 npm run test
-
-# Run frontend tests
-npm run test:frontend
 ```
 
 ---
@@ -345,13 +328,10 @@ npm run deploy:sepolia
 The script will:
 - Deploy CDIOracle contract
 - Deploy RendexToken contract
-- Set up oracle permissions
-- **Automatically save contract addresses to .env**
+- Authorize `ORACLE_UPDATER_ADDRESS` if set in `.env`
+- Save contract addresses to `deployments/sepolia.json`
 
-After deployment, your `.env` will be updated with:
-- `CDI_ORACLE_ADDRESS=0x...`
-- `RENDEX_TOKEN_ADDRESS=0x...`
-- `DEPLOYER_ADDRESS=0x...`
+After deployment, copy the addresses from `deployments/sepolia.json` into your `.env` and `oracle-service/.env`.
 
 ### Step 3: Verify Contracts (Optional)
 
@@ -486,9 +466,9 @@ function getRebaseStats() external view returns (...)
 
 **Rebase Mechanism**:
 1. **Daily Interval**: Rebase can only be executed once per day
-2. **CDI Rate**: Fetched from oracle (e.g., 10% = 1000 basis points)
-3. **Rebase Rate**: 120% of CDI (e.g., 12% for 10% CDI)
-4. **Share Calculation**: `new_shares = old_shares * (1 + rebase_rate)`
+2. **CDI Rate**: Annual rate fetched from oracle (e.g., 13.65% p.a. = 1365 basis points)
+3. **Daily Rate**: `annual_cdi * 120% / 365` (e.g., ~0.045%/day for 13.65% CDI)
+4. **Share Calculation**: `new_shares = old_shares * (1 + daily_rate)`
 
 ### CDIOracle Contract
 
@@ -526,8 +506,8 @@ function emergencyUpdateCDI(uint256 _newCDI) external onlyOwner
 
 **Rebase Parameters**:
 - **Interval**: 24 hours (1 day)
-- **Multiplier**: 120% of CDI rate
-- **Example**: 10% CDI → 12% daily rebase
+- **Multiplier**: 120% of annual CDI, divided by 365 for the daily fraction
+- **Example**: 13.65% annual CDI → ~0.045% daily rebase (~16.4% annual yield)
 
 **Token Parameters**:
 - **Name**: "Rendex Token"
@@ -546,12 +526,12 @@ function emergencyUpdateCDI(uint256 _newCDI) external onlyOwner
 **Example Calculation**:
 ```
 Initial Balance: 1000 RDX
-CDI Rate: 10% (1000 basis points)
-Rebase Rate: 12% (120% of CDI)
+Annual CDI Rate: 13.65% (1365 basis points)
+Daily Rebase Rate: 13.65% * 120% / 365 ≈ 0.0449%/day
 
-Day 1: 1000 * (1 + 0.12) = 1120 RDX
-Day 2: 1120 * (1 + 0.12) = 1254.4 RDX
-Day 30: ~34,000 RDX (compounded daily)
+Day 1:   1000 * (1 + 0.000449) ≈ 1000.45 RDX
+Day 30:  1000 * (1 + 0.000449)^30 ≈ 1013.5 RDX
+Day 365: 1000 * (1 + 0.000449)^365 ≈ 1178.5 RDX (~17.85% annual, compounded)
 ```
 
 ### Security Features

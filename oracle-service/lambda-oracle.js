@@ -7,7 +7,7 @@ const CONFIG = {
   CDI_API_URL: 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados/ultimos/1?formato=json',
   
   // Blockchain configuration
-  RPC_URL: process.env.RPC_URL || 'https://sepolia.infura.io/v3/YOUR_INFURA_KEY',
+  RPC_URL: process.env.RPC_URL || (() => { throw new Error('RPC_URL environment variable is required'); })(),
   PRIVATE_KEY: process.env.PRIVATE_KEY,
   CDI_ORACLE_ADDRESS: process.env.CDI_ORACLE_ADDRESS,
   
@@ -60,35 +60,30 @@ class CDIOracleService {
   }
 
   /**
-   * Convert API percentage to decimal (API returns 13.65, we need 0.1365)
+   * BCB sgs.12 returns annual CDI percentage (e.g., 13.65 means 13.65% p.a.)
    */
-  getDailyCDI(cdiFromAPI) {
-    // API returns percentage (e.g., 13.65), convert to decimal (0.1365)
-    const dailyCDIDecimal = cdiFromAPI / 100;
-    console.log(`📊 CDI from API: ${cdiFromAPI}% → Decimal: ${dailyCDIDecimal}`);
-    return dailyCDIDecimal;
+  getAnnualCDI(cdiFromAPI) {
+    console.log(`📊 Annual CDI from API: ${cdiFromAPI}%`);
+    return cdiFromAPI;
   }
 
   /**
    * Apply CDI multiplier (120% of CDI)
    */
-  applyCDIMultiplier(dailyCDI) {
-    const adjustedCDI = (dailyCDI * CONFIG.CDI_MULTIPLIER) / CONFIG.MULTIPLIER_DENOMINATOR;
-    console.log(`📈 Applied ${CONFIG.CDI_MULTIPLIER}% multiplier: ${adjustedCDI.toFixed(6)}`);
+  applyCDIMultiplier(annualCDI) {
+    const adjustedCDI = (annualCDI * CONFIG.CDI_MULTIPLIER) / CONFIG.MULTIPLIER_DENOMINATOR;
+    console.log(`📈 Applied ${CONFIG.CDI_MULTIPLIER}% multiplier: ${adjustedCDI.toFixed(4)}%`);
     return adjustedCDI;
   }
 
   /**
-   * Convert decimal to contract format (parts per million - ppm)
+   * Convert annual percentage to basis points (e.g., 13.65 → 1365).
+   * Contract stores CDI as basis points where 10000 = 100%, 1000 = 10%.
    */
-  convertToContractFormat(decimalValue) {
-    // Convert decimal (e.g., 0.1638) to parts per million (163800)
-    // Contract now expects ppm where 10000 = 1%
-    // This gives us 4 decimal places of precision for daily rates
-    const ppm = Math.floor(decimalValue * 1000000);
-    
-    console.log(`🔢 Converting ${decimalValue} to ppm: ${ppm}`);
-    return ppm;
+  convertToContractFormat(annualPercent) {
+    const basisPoints = Math.round(annualPercent * 100);
+    console.log(`🔢 Converting ${annualPercent}% → ${basisPoints} basis points`);
+    return basisPoints;
   }
 
   /**
@@ -119,16 +114,16 @@ class CDIOracleService {
     try {
       console.log('🚀 Starting CDI update process...');
       
-      // Fetch CDI from API
+      // Fetch annual CDI from BCB API (e.g., 13.65 = 13.65% p.a.)
       const cdiFromAPI = await this.fetchCDIFromAPI();
-      
-      // Get daily CDI (already daily rate from API)
-      const dailyCDI = this.getDailyCDI(cdiFromAPI);
-      
+
+      // Keep as annual rate
+      const annualCDI = this.getAnnualCDI(cdiFromAPI);
+
       // Apply multiplier
-      const adjustedCDI = this.applyCDIMultiplier(dailyCDI);
-      
-      // Convert to contract format
+      const adjustedCDI = this.applyCDIMultiplier(annualCDI);
+
+      // Convert to basis points for contract
       const contractValue = this.convertToContractFormat(adjustedCDI);
       
       // Update on blockchain
