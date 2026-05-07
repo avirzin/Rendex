@@ -69,11 +69,14 @@ This section provides a simplified, high-level view of how an investment moves f
 
 | Layer           | Technology                  | Purpose                            |
 |----------------|------------------------------|------------------------------------|
-| Framework       | Next.js (TypeScript)         | Routing + SSR + scalability        |
-| Wallet Connect  | RainbowKit + Wagmi           | MetaMask and WalletConnect support |
-| Styling         | Tailwind CSS                 | Fast UI development                |
+| Smart Contracts | Solidity + Hardhat           | ERC-20 token + CDI oracle          |
+| Framework       | Next.js (TypeScript)         | Frontend dashboard                 |
+| Wallet Connect  | Wagmi v2 + Viem              | MetaMask connection + contract reads |
+| Styling         | Tailwind CSS                 | UI                                 |
+| Charts          | Recharts                     | Performance chart                  |
 | Provider        | Infura                       | RPC endpoint for Sepolia           |
-| Chain           | Sepolia                      | Testnet for MVP                    |
+| Oracle          | AWS Lambda + EventBridge     | Daily CDI update (midnight UTC)    |
+| Chain           | Sepolia                      | Testnet                            |
 
 ---
 
@@ -86,8 +89,7 @@ This section provides a simplified, high-level view of how an investment moves f
 
 ### Off-Chain Components
 
-- **CDI Oracle Service**: A Node.js service that fetches the current annual CDI from the [Brazilian Central Bank API](https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados/ultimos/1?formato=json) and updates the on-chain oracle once per day. The API returns the annual CDI percentage (e.g. `13.65`), which is converted to basis points (`1365`) and stored in the contract.
-- **Rebaser**: A cronjob or script that calls `updateCDI()` and triggers `rebase()` daily to maintain the yield simulation.
+- **CDI Oracle Service**: A Node.js AWS Lambda function that fetches the current daily CDI rate from the [Brazilian Central Bank API](https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados/ultimos/1?formato=json) and updates the on-chain oracle once per day. The API returns the daily CDI percentage (e.g. `0.0641`), which is converted to daily basis points (e.g. `6`) and stored in the contract. Triggered automatically by AWS EventBridge at midnight UTC.
 
 ### Diagrams
 
@@ -138,147 +140,58 @@ Rendex/
 
 ## 🚀 Getting Started
 
-### Option 1: Local blockchain + Oracle (current state)
-
-1. Clone the repo
-2. Install dependencies:
+### 1. Install dependencies
 
 ```bash
 npm install
 ```
 
-3. Copy `.env` and fill in your values:
+### 2. Configure environment
 
-```bash
-# Already created — just fill in PRIVATE_KEY, RPC_URL, ETHERSCAN_API_KEY
+Fill in `.env` at the project root:
+
+```env
+PRIVATE_KEY=your_metamask_private_key
+RPC_URL=https://sepolia.infura.io/v3/YOUR_INFURA_KEY
+ETHERSCAN_API_KEY=your_etherscan_api_key   # optional, for verification
+INITIAL_CDI_RATE=6
 ```
 
-4. Deploy contracts to Sepolia:
+### 3. Deploy contracts to Sepolia
 
 ```bash
 npm run deploy:sepolia
 ```
 
-5. Copy `CDI_ORACLE_ADDRESS` from `deployments/sepolia.json` into `oracle-service/.env`
+Addresses are saved to `deployments/sepolia.json`. Copy `CDI_ORACLE_ADDRESS` and `RENDEX_TOKEN_ADDRESS` into `.env` and `oracle-service/.env`.
 
-6. Start the oracle service:
+### 4. Configure oracle service
 
-```bash
-make up-oracle
-```
-
-### Option 2: Frontend (coming soon)
-
-The frontend is not yet implemented. The Docker services for the frontend are present but commented out in `docker-compose.yml`.
-
-### Docker Commands
-
-```bash
-# Show all available Docker commands
-make help
-
-# Oracle Service
-make up-oracle      # Start oracle service (requires Hardhat node)
-make oracle-logs    # View oracle service logs
-make oracle-manual  # Trigger manual CDI update
-make oracle-status  # Check oracle service status
-
-# Maintenance
-make down           # Stop all services
-make clean          # Clean up containers and images
-```
-
-### Docker Files Overview
-
-| File | Purpose |
-|------|---------|
-| `Dockerfile` | Production-optimized multi-stage build |
-| `Dockerfile.dev` | Development environment with hot reloading |
-| `docker-compose.yml` | Main orchestration file |
-| `docker-compose.override.yml` | Development-specific overrides |
-| `.dockerignore` | Files excluded from Docker build context |
-| `Makefile` | Convenient commands for common operations |
-
-### Docker Configuration
-
-#### Environment Variables
-
-Create a `.env` file in the project root:
+Fill in `oracle-service/.env`:
 
 ```env
-# Database (if using PostgreSQL)
-POSTGRES_DB=rendex
-POSTGRES_USER=rendex_user
-POSTGRES_PASSWORD=your_secure_password
-
-# Redis (if using Redis)
-REDIS_PASSWORD=your_redis_password
-
-# Blockchain
-PRIVATE_KEY=your_private_key_for_deployment
-ETHERSCAN_API_KEY=your_etherscan_api_key
-```
-
-### Docker Architecture
-
-#### Development Environment
-
-![Docker Architecture diagram](./images/docker_architecture.png)
-
-### Docker Troubleshooting
-
-1. **Port already in use:**
-   ```bash
-   # Check what's using the port
-   lsof -i :3000
-   
-   # Stop conflicting services
-   docker-compose down
-   ```
-
-2. **Permission issues:**
-   ```bash
-   # Fix file permissions
-   sudo chown -R $USER:$USER .
-   ```
-
-3. **Build cache issues:**
-   ```bash
-   # Clean build cache
-   docker-compose build --no-cache
-   ```
-
-4. **Container won't start:**
-   ```bash
-   # Check logs
-   docker-compose logs frontend-dev
-   
-   # Check container status
-   docker-compose ps
-   ```
-
-### Oracle Service Setup
-
-The CDI Oracle Service is included in the Docker setup and will automatically start with the development environment. To configure it:
-
-1. **Set environment variables** in `oracle-service/.env`:
-```bash
 RPC_URL=https://sepolia.infura.io/v3/YOUR_INFURA_KEY
-PRIVATE_KEY=your_oracle_wallet_private_key
-CDI_ORACLE_ADDRESS=0x... # From deployments/sepolia.json after deploy
+PRIVATE_KEY=your_metamask_private_key
+CDI_ORACLE_ADDRESS=0x...
 ```
 
-2. **Start the oracle service**:
+Run manually to test:
+
 ```bash
-make up-oracle
+cd oracle-service && node index.js
 ```
 
-3. **Monitor the service**:
+### 5. Deploy oracle to AWS Lambda
+
+Upload `oracle-service/lambda-oracle.js` as a Lambda function and set the same environment variables. Add an EventBridge rule (`cron(0 0 * * ? *)`) to trigger it daily at midnight UTC.
+
+### 6. Run the frontend
+
 ```bash
-make oracle-logs
+cd frontend && npm install && npm run dev
 ```
 
-For detailed oracle service documentation, see [oracle-service/README.md](oracle-service/README.md).
+Open `http://localhost:3000`. Connect MetaMask on Sepolia to see your position and trigger rebases.
 
 ---
 
@@ -411,7 +324,7 @@ The CDI rate is fetched from the Brazilian Central Bank API:
 - **Latest Rate:** `https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados/ultimos/1?formato=json`
 - **Historical Data:** `https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados?formato=json&dataInicial=DD/MM/AAAA&dataFinal=DD/MM/AAAA`
 
-The API returns the annual CDI percentage (e.g. `13.65`), which is converted to basis points (`1365`) and stored in the contract. The daily rebase rate is computed as `annual_cdi * 120% / 365`.
+The API returns the daily CDI percentage (e.g. `0.0641`), which is converted to daily basis points (e.g. `6`) and stored in the contract. The rebase rate is computed as `daily_cdi_bp * 120% / 100` (e.g. 6 × 1.2 = 7 bp = 0.07%/day).
 
 ---
 
@@ -467,9 +380,9 @@ function getRebaseStats() external view returns (...)
 
 **Rebase Mechanism**:
 1. **Daily Interval**: Rebase can only be executed once per day
-2. **CDI Rate**: Annual rate fetched from oracle (e.g., 13.65% p.a. = 1365 basis points)
-3. **Rebase Rate**: `daily_cdi_bp * 120% / 100` (e.g., 6 bp * 120% = 7 bp → 0.07%/day)
-4. **Share Calculation**: `new_shares = old_shares * (1 + rebase_rate)`
+2. **CDI Rate**: Daily rate fetched from oracle (e.g., 0.0641%/day = 6 daily basis points)
+3. **Rebase Rate**: `daily_cdi_bp * 120% / 100` (e.g., 6 bp × 1.2 = 7 bp → 0.07%/day)
+4. **Share Calculation**: `new_shares = old_shares * (1 + rebase_rate / 10000)`
 
 ### CDIOracle Contract
 
@@ -500,9 +413,8 @@ function emergencyUpdateCDI(uint256 _newCDI) external onlyOwner
 ### Configuration
 
 **CDI Rate System**:
-- **Basis Points**: 1000 = 10%, 1500 = 15%, etc.
-- **Range**: 0-5000 basis points (0-50%)
-- **Update Frequency**: Daily (configurable)
+- **Daily Basis Points**: 6 = 0.06%/day, 7 = 0.07%/day, etc.
+- **Update Frequency**: Daily (AWS Lambda at midnight UTC)
 - **Staleness Threshold**: 7 days
 
 **Rebase Parameters**:
