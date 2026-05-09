@@ -30,6 +30,9 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
+# Next.js build output
+frontend/.next/
+
 # Other
 .cache/
 .zip

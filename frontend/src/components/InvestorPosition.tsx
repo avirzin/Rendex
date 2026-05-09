@@ -33,7 +33,7 @@ export function InvestorPosition() {
   }
 
   const formattedBalance = balance !== undefined
-    ? Number(formatEther(balance)).toLocaleString('en-US', { maximumFractionDigits: 4 })
+    ? `R$ ${Number(formatEther(balance)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
     : '—'
 
   return (
@@ -41,9 +41,8 @@ export function InvestorPosition() {
       <h3 className="text-lg text-neutral-900 mb-6">Your Position</h3>
       <div className="flex items-end gap-2 mb-2">
         <span className="text-4xl text-neutral-900">{formattedBalance}</span>
-        <span className="text-lg text-neutral-500 mb-1">RDX</span>
       </div>
-      <p className="text-sm text-neutral-400">Balance increases automatically after each daily rebase.</p>
+      <p className="text-sm text-neutral-400">Value increases automatically after each daily rebase.</p>
     </div>
   )
 }

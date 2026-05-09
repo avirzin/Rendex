@@ -35,10 +35,10 @@ export function PoolStats() {
 
   const dailyCDI = currentCDI !== undefined ? `${(Number(currentCDI) / 100).toFixed(4)}%` : '—'
   const unitPrice = sharesPerToken !== undefined
-    ? (Number(sharesPerToken) / 1e18).toFixed(6)
+    ? `R$ ${(Number(sharesPerToken) / 1e18).toFixed(6)}`
     : '—'
-  const supply = totalSupply !== undefined
-    ? Number(formatEther(totalSupply)).toLocaleString('en-US', { maximumFractionDigits: 2 })
+  const supply = totalSupply !== undefined && sharesPerToken !== undefined && sharesPerToken > 0n
+    ? Number(formatEther((totalSupply * 10n ** 18n) / sharesPerToken)).toLocaleString('en-US', { maximumFractionDigits: 2 })
     : '—'
 
   return (
