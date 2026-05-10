@@ -58,10 +58,17 @@ This section provides a simplified, high-level view of how an investment moves f
 ## 🔍 Overview
 
 - **Token Type:** Rebasing ERC-20
-- **Yield Rate:** 120% of annual CDI, applied as a daily compound rebase
+- **Yield Rate:** 120% of daily CDI, applied as a daily compound rebase
 - **Custody:** Off-chain (abstracted in the simulation)
 - **Chain:** Sepolia (testnet)
 - **Purpose:** Educational / Proof-of-Concept
+
+## 📍 Deployed Contracts (Sepolia)
+
+| Contract | Address |
+|---|---|
+| CDIOracle | [`0x9a8FfF63990Efd2424536247e1827300847201A6`](https://sepolia.etherscan.io/address/0x9a8FfF63990Efd2424536247e1827300847201A6) |
+| RendexToken (RDX) | [`0x702504aB0DE0cf3646265dCeE9015017ed435880`](https://sepolia.etherscan.io/address/0x702504aB0DE0cf3646265dCeE9015017ed435880) |
 
 ---
 
@@ -100,14 +107,6 @@ The following class diagram illustrates the architecture of the Rendex smart con
 ![Class Diagram](./images/class_diagram.png)
 
 For a detailed view and Mermaid source code, see [docs/UML-Class-Diagram.md](docs/UML-Class-Diagram.md).
-
-#### Sequence Diagram
-
-The following sequence diagram illustrates the complete system flow, including oracle updates, user interactions, rebase execution, and redemption processes:
-
-![Sequence Diagram](./images/sequence_diagram.png)
-
-For detailed Mermaid sequence diagrams with multiple views, see [docs/sequence-diagram.md](docs/sequence-diagram.md).
 
 ---
 
@@ -183,7 +182,7 @@ cd oracle-service && node index.js
 
 ### 5. Deploy oracle to AWS Lambda
 
-Upload `oracle-service/lambda-oracle.js` as a Lambda function and set the same environment variables. Add an EventBridge rule (`cron(0 0 * * ? *)`) to trigger it daily at midnight UTC.
+Upload `oracle-service/lambda-oracle.js` as a Lambda function and set the same environment variables. Add an EventBridge rule (`cron(0 0 * * ? *)`) to trigger it daily at midnight UTC. Note: a production implementation should use `cron(0 0 ? * MON-FRI *)` to respect the ANBIMA 252 business day convention.
 
 ### 6. Run the frontend
 
@@ -439,13 +438,24 @@ function emergencyUpdateCDI(uint256 _newCDI) external onlyOwner
 **Example Calculation**:
 ```
 Initial Balance: 1000 RDX
-Daily CDI from BCB API: 0.0534%/day → 6 daily basis points
-Rebase Rate: 6 * 120% = 7.2 → 7 basis points (0.07%/day)
+Annual CDI: 14.75%
+Daily CDI factor (ANBIMA 252 business days): (1 + 0.1475)^(1/252) - 1 = 0.0553%/day → 6 daily basis points
+Rebase Rate: 6 * 120% / 100 = 7 basis points (0.07%/day)
 
-Day 1:   1000 * (1 + 0.0007) ≈ 1000.70 RDX
-Day 30:  1000 * (1 + 0.0007)^30 ≈ 1021.3 RDX
-Day 365: 1000 * (1 + 0.0007)^365 ≈ 1292.8 RDX (~29.3% annual, compounded)
+Day 1:    1000 * (1 + 0.0007) ≈ 1000.70 RDX
+Day 30:   1000 * (1 + 0.0007)^30 ≈ 1021.3 RDX
+Day 252:  1000 * (1 + 0.0007)^252 ≈ 1193.0 RDX (~19.3% annual, compounded at 120% CDI)
 ```
+
+> ⚠️ **Simulation Simplification — ANBIMA 252 Business Day Convention**
+>
+> In Brazil, CVM-regulated institutions follow the **ANBIMA standard**: CDI accrues only on **252 business days per year** (dias úteis), excluding weekends and national holidays. The BCB series 12 daily rate is derived from the annual CDI using this 252-day basis:
+>
+> `daily factor = (1 + annual_CDI)^(1/252) - 1`
+>
+> In a production implementation, the oracle should update and `rebase()` should be triggered **only on business days**, using a holiday calendar to skip weekends and Brazilian national holidays.
+>
+> **In this simulation**, the AWS Lambda runs daily including weekends (`cron(0 0 * * ? *)`), which slightly overstates the annual yield. This is a known simplification for demonstration purposes.
 
 ### Security Features
 
