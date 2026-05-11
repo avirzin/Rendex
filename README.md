@@ -98,9 +98,11 @@ This section provides a simplified, high-level view of how an investment moves f
 
 - **CDI Oracle Service**: A Node.js AWS Lambda function that fetches the current daily CDI rate from the [Brazilian Central Bank API](https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados/ultimos/1?formato=json) and updates the on-chain oracle once per day. The API returns the daily CDI percentage (e.g. `0.0641`), which is converted to daily basis points (e.g. `6`) and stored in the contract. Triggered automatically by AWS EventBridge at midnight UTC.
 
-### Diagrams
+### How It Works
 
-#### Class Diagram
+![How It Works](./images/how_it_works.png)
+
+### Class Diagram
 
 The following class diagram illustrates the architecture of the Rendex smart contracts, showing the relationship between `RendexToken`, `CDIOracle`, and the `ICDIOracle` interface:
 
