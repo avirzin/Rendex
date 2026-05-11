@@ -53,7 +53,7 @@ package "Rendex Contracts" {
         +MIN_CDI_RATE: uint256 = 0
         +STALE_THRESHOLD: uint256 = 604800
         
-        +constructor(uint256, address)
+        +constructor(uint256 initialCDI, address initialOwner)
         +getCDI(): uint256
         +getLastUpdateTime(): uint256
         +getCDIWithMetadata(): (uint256, uint256, bool)

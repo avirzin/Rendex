@@ -50,7 +50,7 @@ classDiagram
         +MIN_CDI_RATE: uint256 = 0
         +STALE_THRESHOLD: uint256 = 604800
         
-        +constructor(uint256)
+        +constructor(uint256, address)
         +getCDI() uint256
         +getLastUpdateTime() uint256
         +getCDIWithMetadata() (uint256, uint256, bool)
