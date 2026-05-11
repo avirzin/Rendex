@@ -18,7 +18,7 @@ const config: HardhatUserConfig = {
     hardhat: {
       chainId: 31337,
       accounts: {
-        mnemonic: "test test test test test test test test test test test test junk",
+        mnemonic: "test test test test test test test test test test test junk",
         count: 20,
       },
     },

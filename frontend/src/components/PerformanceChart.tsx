@@ -10,11 +10,12 @@ const TOTAL_SUPPLY = 1_000_000
 
 type DataPoint = { date: string; poolValue: number }
 
-export function PerformanceChart() {
+export function PerformanceChart({ refreshKey }: { refreshKey?: number }) {
   const [data, setData] = useState<DataPoint[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    setLoading(true)
     const client = createPublicClient({
       chain: sepolia,
       transport: http(process.env.NEXT_PUBLIC_RPC_URL),
@@ -40,7 +41,7 @@ export function PerformanceChart() {
       setData([genesis, ...points])
       setLoading(false)
     }).catch(() => setLoading(false))
-  }, [])
+  }, [refreshKey])
 
   if (loading) {
     return (

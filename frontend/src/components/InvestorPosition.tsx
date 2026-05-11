@@ -10,7 +10,7 @@ export function InvestorPosition() {
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
 
-  const { data: balance } = useReadContract({
+  const { data: balance, isFetching } = useReadContract({
     address: CONTRACTS.rendexToken,
     abi: RENDEX_TOKEN_ABI,
     functionName: 'balanceOf',
@@ -40,7 +40,10 @@ export function InvestorPosition() {
     <div className="bg-white rounded-lg border border-neutral-200 p-8">
       <h3 className="text-lg text-neutral-900 mb-6">Your Position</h3>
       <div className="flex items-end gap-2 mb-2">
-        <span className="text-4xl text-neutral-900">{formattedBalance}</span>
+        {isFetching
+          ? <div className="animate-pulse bg-neutral-200 rounded h-10 w-48 mt-1" />
+          : <span className="text-4xl text-neutral-900">{formattedBalance}</span>
+        }
       </div>
       <p className="text-sm text-neutral-400">Value increases automatically after each daily rebase.</p>
     </div>
