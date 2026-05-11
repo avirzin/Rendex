@@ -34,7 +34,7 @@ export default function Home() {
 
       <footer className="bg-white border-t border-neutral-200">
         <div className="max-w-7xl mx-auto px-8 py-8 text-center text-sm text-neutral-400">
-          <p>© 2025 Rendex. Educational simulation. No real funds.</p>
+          <p>© {new Date().getFullYear()} Rendex. Educational simulation. No real funds.</p>
           <p className="mt-1">Built as an Alchemy University Capstone Project.</p>
         </div>
       </footer>
