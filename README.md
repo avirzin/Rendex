@@ -112,7 +112,7 @@ For a detailed view and Mermaid source code, see [docs/UML-Class-Diagram.md](doc
 
 ---
 
-## 🧪 MVP Features
+## 🧪 Features
 
 - ✅ Connect wallet using MetaMask or WalletConnect
 - ✅ View current token balance (auto-increasing via rebase)
