@@ -11,7 +11,7 @@ describe("RendexToken", function () {
   let user2: SignerWithAddress;
   let unauthorized: SignerWithAddress;
 
-  const INITIAL_CDI = 1000; // 10% in basis points
+  const INITIAL_CDI = 534; // 0.0534%/day in units of 0.0001%
   const TOKEN_NAME = "Rendex Token";
   const TOKEN_SYMBOL = "RDX";
   const INITIAL_SUPPLY = ethers.parseEther("1000000"); // 1M tokens
@@ -57,7 +57,7 @@ describe("RendexToken", function () {
 
     it("Should calculate correct rebase rate", async function () {
       // 120% of 10% = 12%
-      const expectedRebaseRate = (INITIAL_CDI * 120) / 100;
+      const expectedRebaseRate = Math.floor(INITIAL_CDI * 120 / 100);
       expect(await rendexToken.calculateRebaseRate()).to.equal(expectedRebaseRate);
     });
 
@@ -111,7 +111,7 @@ describe("RendexToken", function () {
         .withArgs(
           1, // rebaseCount
           INITIAL_CDI, // cdiRate
-          (INITIAL_CDI * 120) / 100, // rebaseRate
+          Math.floor(INITIAL_CDI * 120 / 100), // rebaseRate
           anyValue, // newSharesPerToken
           anyValue // timestamp
         );
@@ -172,7 +172,7 @@ describe("RendexToken", function () {
       expect(stats[1]).to.equal(await rendexToken.getNextRebaseTime()); // nextRebaseTime
       expect(stats[2]).to.equal(0); // rebaseCount
       expect(stats[3]).to.equal(INITIAL_CDI); // currentCDI
-      expect(stats[4]).to.equal((INITIAL_CDI * 120) / 100); // rebaseRate
+      expect(stats[4]).to.equal(Math.floor(INITIAL_CDI * 120 / 100)); // rebaseRate
       expect(stats[5]).to.be.false; // isReady
     });
 

@@ -2,8 +2,8 @@
   "network": "sepolia",
   "deployer": "0x8Edc25658FB3E000f16F7122BB56a4F6cF860A38",
   "contracts": {
-    "cdiOracle": "0x9a8FfF63990Efd2424536247e1827300847201A6",
-    "rendexToken": "0x702504aB0DE0cf3646265dCeE9015017ed435880"
+    "cdiOracle": "0x4b937A83f72201560BcC91f0dBa9a03Dd57B36e7",
+    "rendexToken": "0x3B485F4c487C0D3C346352714b44F1dD11d7eC1e"
   },
   "token": {
     "name": "Rendex Token",
@@ -11,8 +11,8 @@
     "initialSupply": "1000000.0"
   },
   "oracle": {
-    "initialCDI": 6,
-    "cdiPercent": 0.06
+    "initialCDI": 534,
+    "cdiPercent": 5.34
   },
-  "timestamp": "2026-05-06T17:16:14.718Z"
+  "timestamp": "2026-05-12T00:19:02.712Z"
 }

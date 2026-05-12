@@ -19,7 +19,7 @@ contract CDIOracle is ICDIOracle, Ownable, Pausable {
     uint256 public lastUpdateTime;
     
     // Configuration
-    uint256 public constant MAX_CDI_RATE = 5000; // 50% max rate
+    uint256 public constant MAX_CDI_RATE = 500000; // 50% max rate (in units of 0.0001%)
     uint256 public constant MIN_CDI_RATE = 0;    // 0% min rate
     uint256 public constant STALE_THRESHOLD = 7 days; // 7 days max staleness
     

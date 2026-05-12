@@ -1,6 +1,6 @@
 export const CONTRACTS = {
-  cdiOracle: '0x9a8FfF63990Efd2424536247e1827300847201A6' as `0x${string}`,
-  rendexToken: '0x702504aB0DE0cf3646265dCeE9015017ed435880' as `0x${string}`,
+  cdiOracle: '0x4b937A83f72201560BcC91f0dBa9a03Dd57B36e7' as `0x${string}`,
+  rendexToken: '0x3B485F4c487C0D3C346352714b44F1dD11d7eC1e' as `0x${string}`,
   owner: '0x8Edc25658FB3E000f16F7122BB56a4F6cF860A38' as `0x${string}`,
 }
 

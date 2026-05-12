@@ -37,7 +37,7 @@ export function PoolStats() {
     functionName: 'totalSupply',
   })
 
-  const dailyCDI = currentCDI !== undefined ? `${(Number(currentCDI) / 100).toFixed(4)}%` : '—'
+  const dailyCDI = currentCDI !== undefined ? `${(Number(currentCDI) / 10000).toFixed(4)}%` : '—'
   const unitPrice = sharesPerToken !== undefined
     ? `R$ ${(Number(sharesPerToken) / 1e18).toFixed(6)}`
     : '—'

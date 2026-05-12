@@ -67,8 +67,8 @@ This section provides a simplified, high-level view of how an investment moves f
 
 | Contract | Address |
 |---|---|
-| CDIOracle | [`0x9a8FfF63990Efd2424536247e1827300847201A6`](https://sepolia.etherscan.io/address/0x9a8FfF63990Efd2424536247e1827300847201A6) |
-| RendexToken (RDX) | [`0x702504aB0DE0cf3646265dCeE9015017ed435880`](https://sepolia.etherscan.io/address/0x702504aB0DE0cf3646265dCeE9015017ed435880) |
+| CDIOracle | [`0x4b937A83f72201560BcC91f0dBa9a03Dd57B36e7`](https://sepolia.etherscan.io/address/0x4b937A83f72201560BcC91f0dBa9a03Dd57B36e7) |
+| RendexToken (RDX) | [`0x3B485F4c487C0D3C346352714b44F1dD11d7eC1e`](https://sepolia.etherscan.io/address/0x3B485F4c487C0D3C346352714b44F1dD11d7eC1e) |
 
 ---
 

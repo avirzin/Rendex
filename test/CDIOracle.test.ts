@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
+import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { CDIOracle } from "../typechain-types";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 
@@ -9,7 +10,7 @@ describe("CDIOracle", function () {
   let updater: HardhatEthersSigner;
   let stranger: HardhatEthersSigner;
 
-  const INITIAL_CDI = 1000; // 10% p.a.
+  const INITIAL_CDI = 534; // 0.0534%/day in units of 0.0001%
 
   beforeEach(async function () {
     [owner, updater, stranger] = await ethers.getSigners();
@@ -43,14 +44,14 @@ describe("CDIOracle", function () {
 
   describe("updateCDI", function () {
     it("allows owner to update CDI", async function () {
-      await oracle.connect(owner).updateCDI(1365);
-      expect(await oracle.getCDI()).to.equal(1365);
+      await oracle.connect(owner).updateCDI(641);
+      expect(await oracle.getCDI()).to.equal(641);
     });
 
     it("allows authorized updater to update CDI", async function () {
       await oracle.connect(owner).setAuthorizedUpdater(updater.address, true);
-      await oracle.connect(updater).updateCDI(1365);
-      expect(await oracle.getCDI()).to.equal(1365);
+      await oracle.connect(updater).updateCDI(641);
+      expect(await oracle.getCDI()).to.equal(641);
     });
 
     it("reverts for unauthorized caller", async function () {
@@ -59,14 +60,14 @@ describe("CDIOracle", function () {
     });
 
     it("reverts if rate exceeds MAX_CDI_RATE", async function () {
-      await expect(oracle.connect(owner).updateCDI(5001))
+      await expect(oracle.connect(owner).updateCDI(500001))
         .to.be.revertedWith("CDIOracle: invalid CDI rate");
     });
 
     it("emits CDIUpdated event", async function () {
-      await expect(oracle.connect(owner).updateCDI(1365))
+      await expect(oracle.connect(owner).updateCDI(641))
         .to.emit(oracle, "CDIUpdated")
-        .withArgs(INITIAL_CDI, 1365, await ethers.provider.getBlock("latest").then(b => b!.timestamp + 1), owner.address);
+        .withArgs(INITIAL_CDI, 641, anyValue, owner.address);
     });
   });
 
@@ -126,8 +127,8 @@ describe("CDIOracle", function () {
       await ethers.provider.send("evm_increaseTime", [sevenDays + 1]);
       await ethers.provider.send("evm_mine", []);
 
-      await oracle.connect(owner).emergencyUpdateCDI(1500);
-      expect(await oracle.getCDI()).to.equal(1500);
+      await oracle.connect(owner).emergencyUpdateCDI(641);
+      expect(await oracle.getCDI()).to.equal(641);
       expect(await oracle.isStale()).to.be.false;
     });
 

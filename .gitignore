@@ -36,3 +36,4 @@ frontend/.next/
 # Other
 .cache/
 .zip
+oracle-service/*.zip

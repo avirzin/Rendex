@@ -77,13 +77,13 @@ class CDIOracleService {
   }
 
   /**
-   * Convert daily percentage to basis points (e.g., 0.0641 → 6).
-   * Contract stores CDI as daily basis points where 100 = 1%, 1 = 0.01%.
+   * Convert daily percentage to contract units (e.g., 0.0534 → 534).
+   * Contract stores CDI in units of 0.0001%/day where 10000 = 1%, 534 = 0.0534%.
    */
   convertToContractFormat(dailyPercent) {
-    const basisPoints = Math.round(dailyPercent * 100);
-    console.log(`🔢 Converting ${dailyPercent}% → ${basisPoints} basis points`);
-    return basisPoints;
+    const contractUnits = Math.round(dailyPercent * 10000);
+    console.log(`🔢 Converting ${dailyPercent}% → ${contractUnits} (units of 0.0001%)`);
+    return contractUnits;
   }
 
   /**
@@ -120,11 +120,8 @@ class CDIOracleService {
       // Keep as daily rate
       const dailyCDI = this.getDailyCDI(cdiFromAPI);
 
-      // Apply multiplier
-      const adjustedCDI = this.applyCDIMultiplier(dailyCDI);
-
-      // Convert to basis points for contract
-      const contractValue = this.convertToContractFormat(adjustedCDI);
+      // Convert to contract units — the 120% multiplier is applied inside the contract
+      const contractValue = this.convertToContractFormat(dailyCDI);
       
       // Update on blockchain
       const receipt = await this.updateCDIOnChain(contractValue);
@@ -135,7 +132,6 @@ class CDIOracleService {
         success: true,
         cdiFromAPI,
         dailyCDI,
-        adjustedCDI,
         contractValue: contractValue.toString(),
         transactionHash: receipt.hash,
         blockNumber: receipt.blockNumber

@@ -79,13 +79,13 @@ class CDIOracleService {
   }
 
   /**
-   * Convert annual percentage to basis points (e.g., 13.65 → 1365).
-   * Contract stores CDI as basis points where 10000 = 100%, 1000 = 10%.
+   * Convert daily percentage to contract units (e.g., 0.0534 → 534).
+   * Contract stores CDI in units of 0.0001%/day where 10000 = 1%, 534 = 0.0534%.
    */
-  convertToContractFormat(annualPercent) {
-    const basisPoints = Math.round(annualPercent * 100);
-    console.log(`🔢 Converting ${annualPercent}% → ${basisPoints} basis points`);
-    return basisPoints;
+  convertToContractFormat(dailyPercent) {
+    const contractUnits = Math.round(dailyPercent * 10000);
+    console.log(`🔢 Converting ${dailyPercent}% → ${contractUnits} (units of 0.0001%)`);
+    return contractUnits;
   }
 
   /**
@@ -139,11 +139,8 @@ class CDIOracleService {
       // 2. Keep as daily rate
       const dailyCDI = this.getDailyCDI(cdiFromAPI);
 
-      // 3. Apply multiplier
-      const adjustedCDI = this.applyCDIMultiplier(dailyCDI);
-
-      // 4. Convert to basis points for contract
-      const contractCDI = this.convertToContractFormat(adjustedCDI);
+      // 3. Convert to contract units — the 120% multiplier is applied inside the contract
+      const contractCDI = this.convertToContractFormat(dailyCDI);
       
       // 5. Update on chain
       await this.updateCDIOnChain(contractCDI);

@@ -36,7 +36,7 @@ export function PerformanceChart({ refreshKey }: { refreshKey?: number }) {
 
       // Genesis point: hardcoded pool deployment date with initial unit price of 1.0 (sharesPerToken = 1e18 at deploy).
       // This is the only point not derived from on-chain RebaseExecuted events — all subsequent points come from the contract.
-      const genesis: DataPoint = { date: 'May 7', poolValue: 1_000_000 }
+      const genesis: DataPoint = { date: 'May 11', poolValue: 1_000_000 }
 
       setData([genesis, ...points])
       setLoading(false)

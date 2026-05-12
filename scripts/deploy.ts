@@ -21,7 +21,7 @@ async function main() {
   await cdiOracle.waitForDeployment();
   const cdiOracleAddress = await cdiOracle.getAddress();
   console.log("✅ CDI Oracle deployed to:", cdiOracleAddress);
-  console.log("📈 Initial CDI rate:", initialCDI, "basis points (", initialCDI / 100, "% p.a.)");
+  console.log("📈 Initial CDI rate:", initialCDI, `(${initialCDI / 10000}%/day)`);
 
   // Deploy RendexToken
   console.log("\n🪙 Deploying RendexToken...");
@@ -81,7 +81,7 @@ async function main() {
     },
     oracle: {
       initialCDI,
-      cdiPercent: initialCDI / 100,
+      cdiPercent: initialCDI / 10000,
     },
     timestamp: new Date().toISOString(),
   };

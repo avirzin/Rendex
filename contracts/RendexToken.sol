@@ -94,7 +94,7 @@ contract RendexToken is ERC20, Ownable, ReentrancyGuard, Pausable {
     /**
      * @dev Calculate rebase rate based on CDI
      * Oracle feeds the daily CDI rate in basis points, so no further time conversion is needed.
-     * @return rebaseRate in basis points (e.g., 7 = 0.07%/day for ~0.053% daily CDI * 120%)
+     * @return rebaseRate in units of 0.0001%/day (e.g., 641 = 0.0641%/day for 0.0534% CDI * 120%)
      */
     function calculateRebaseRate() public view returns (uint256) {
         uint256 cdiRate = getCurrentCDI();
@@ -112,8 +112,8 @@ contract RendexToken is ERC20, Ownable, ReentrancyGuard, Pausable {
         
         // Calculate new shares per token
         // Formula: new_shares = old_shares * (1 + rebase_rate)
-        uint256 newSharesPerToken = sharesPerToken + 
-            (sharesPerToken * rebaseRate) / 10000;
+        uint256 newSharesPerToken = sharesPerToken +
+            (sharesPerToken * rebaseRate) / 1000000;
         
         sharesPerToken = newSharesPerToken;
         lastRebaseTime = block.timestamp;
