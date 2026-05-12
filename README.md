@@ -125,16 +125,17 @@ For a detailed view and Mermaid source code, see [docs/UML-Class-Diagram.md](doc
 
 ```
 Rendex/
+├── contracts/        # Solidity smart contracts
+├── deployments/      # Contract addresses saved after deploy
+├── docs/             # UML diagrams and documentation
+├── frontend/         # Next.js dashboard
+├── images/           # Images used in documentation
+├── oracle-service/   # AWS Lambda oracle (Node.js)
+├── scripts/          # Deployment scripts
+├── test/             # Smart contract tests
 ├── artifacts/        # Compiled contracts (generated)
 ├── cache/            # Hardhat cache (generated)
-├── contracts/        # Smart contracts source code
-├── docs/             # Project documentation (diagrams, UML, etc.)
-├── images/           # Images and diagrams used in documentation
-├── node_modules/     # NPM dependencies (generated)
-├── oracle-service/   # Off-chain oracle service (Node.js / Lambda)
-├── scripts/          # Deployment and utility scripts
-├── test/             # Smart contract tests
-└── typechain-types/  # Generated TypeScript types
+└── typechain-types/  # TypeScript types (generated)
 ```
 
 ---
