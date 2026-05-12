@@ -76,7 +76,7 @@ This section provides a simplified, high-level view of how an investment moves f
 
 | Layer           | Technology                  | Purpose                            |
 |----------------|------------------------------|------------------------------------|
-| Smart Contracts | Solidity + Hardhat           | ERC-20 token + CDI oracle          |
+| Smart Contracts | Solidity + Hardhat + OpenZeppelin | ERC-20 token + CDI oracle      |
 | Framework       | Next.js (TypeScript)         | Frontend dashboard                 |
 | Wallet Connect  | Wagmi v2 + Viem              | MetaMask connection + contract reads |
 | Styling         | Tailwind CSS                 | UI                                 |
@@ -96,7 +96,7 @@ This section provides a simplified, high-level view of how an investment moves f
 
 ### Off-Chain Components
 
-- **CDI Oracle Service**: A Node.js AWS Lambda function that fetches the current daily CDI rate from the [Brazilian Central Bank API](https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados/ultimos/1?formato=json) and updates the on-chain oracle once per day. The API returns the daily CDI percentage (e.g. `0.0641`), which is converted to daily basis points (e.g. `6`) and stored in the contract. Triggered automatically by AWS EventBridge at midnight UTC.
+- **CDI Oracle Service**: A Node.js AWS Lambda function that fetches the current daily CDI rate from the [Brazilian Central Bank API](https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados/ultimos/1?formato=json) and updates the on-chain oracle once per day. The API returns the daily CDI percentage (e.g. `0.0534`), which is converted to units of 0.0001%/day (e.g. `534`) and stored in the contract. Triggered automatically by AWS EventBridge at midnight UTC.
 
 ### How It Works
 
@@ -155,7 +155,7 @@ Fill in `.env` at the project root:
 PRIVATE_KEY=your_metamask_private_key
 RPC_URL=https://sepolia.infura.io/v3/YOUR_INFURA_KEY
 ETHERSCAN_API_KEY=your_etherscan_api_key   # optional, for verification
-INITIAL_CDI_RATE=6
+INITIAL_CDI_RATE=534
 ```
 
 ### 3. Deploy contracts to Sepolia
@@ -325,7 +325,7 @@ The CDI rate is fetched from the Brazilian Central Bank API:
 - **Latest Rate:** `https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados/ultimos/1?formato=json`
 - **Historical Data:** `https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados?formato=json&dataInicial=DD/MM/AAAA&dataFinal=DD/MM/AAAA`
 
-The API returns the daily CDI percentage (e.g. `0.0641`), which is converted to daily basis points (e.g. `6`) and stored in the contract. The rebase rate is computed as `daily_cdi_bp * 120% / 100` (e.g. 6 × 1.2 = 7 bp = 0.07%/day).
+The API returns the daily CDI percentage (e.g. `0.0534`), which is converted to units of 0.0001%/day (e.g. `534`) and stored in the contract. The rebase rate is computed as `cdi_units * 120% / 100` (e.g. 534 × 1.2 = 640 → 0.0640%/day), applied to `sharesPerToken` with a denominator of 1,000,000.
 
 ---
 
@@ -340,18 +340,6 @@ The API returns the daily CDI percentage (e.g. `0.0641`), which is converted to 
 ---
 
 ## 📋 Smart Contracts
-
-### Architecture Overview
-
-```
-┌─────────────────┐    ┌─────────────────┐
-│   CDIOracle     │    │  RendexToken    │
-│                 │    │                 │
-│ • Stores CDI    │◄───┤ • Rebasing      │
-│ • Updates rates │    │ • Yield sim     │
-│ • Validates     │    │ • ERC-20        │
-└─────────────────┘    └─────────────────┘
-```
 
 ### RendexToken Contract
 
@@ -381,9 +369,9 @@ function getRebaseStats() external view returns (...)
 
 **Rebase Mechanism**:
 1. **Daily Interval**: Rebase can only be executed once per day
-2. **CDI Rate**: Daily rate fetched from oracle (e.g., 0.0641%/day = 6 daily basis points)
-3. **Rebase Rate**: `daily_cdi_bp * 120% / 100` (e.g., 6 bp × 1.2 = 7 bp → 0.07%/day)
-4. **Share Calculation**: `new_shares = old_shares * (1 + rebase_rate / 10000)`
+2. **CDI Rate**: Daily rate fetched from oracle (e.g., 0.0534%/day = 534 units of 0.0001%)
+3. **Rebase Rate**: `cdi_units * 120 / 100` (e.g., 534 × 1.2 = 640 → 0.0640%/day)
+4. **Share Calculation**: `new_shares = old_shares * (1 + rebase_rate / 1_000_000)`
 
 ### CDIOracle Contract
 
@@ -414,14 +402,14 @@ function emergencyUpdateCDI(uint256 _newCDI) external onlyOwner
 ### Configuration
 
 **CDI Rate System**:
-- **Daily Basis Points**: 6 = 0.06%/day, 7 = 0.07%/day, etc.
+- **Units**: 0.0001%/day — e.g. 534 = 0.0534%/day, 641 = 0.0641%/day
 - **Update Frequency**: Daily (AWS Lambda at midnight UTC)
 - **Staleness Threshold**: 7 days
 
 **Rebase Parameters**:
 - **Interval**: 24 hours (1 day)
 - **Multiplier**: 120% of daily CDI rate
-- **Example**: 0.0534%/day CDI → 6 daily basis points → rebase rate of 7 bp → ~0.07%/day (~29% annual, compounded)
+- **Example**: 0.0534%/day CDI → 534 units → rebase rate of 640 → 0.0640%/day (~17.8% annual, compounded at 120% CDI)
 
 **Token Parameters**:
 - **Name**: "Rendex Token"
@@ -440,13 +428,12 @@ function emergencyUpdateCDI(uint256 _newCDI) external onlyOwner
 **Example Calculation**:
 ```
 Initial Balance: 1000 RDX
-Annual CDI: 14.75%
-Daily CDI factor (ANBIMA 252 business days): (1 + 0.1475)^(1/252) - 1 = 0.0553%/day → 6 daily basis points
-Rebase Rate: 6 * 120% / 100 = 7 basis points (0.07%/day)
+BCB API daily CDI: 0.0534%/day → 534 units (stored in CDIOracle)
+Rebase Rate: 534 * 120 / 100 = 640 (applied as 640 / 1_000_000 per day)
 
-Day 1:    1000 * (1 + 0.0007) ≈ 1000.70 RDX
-Day 30:   1000 * (1 + 0.0007)^30 ≈ 1021.3 RDX
-Day 252:  1000 * (1 + 0.0007)^252 ≈ 1193.0 RDX (~19.3% annual, compounded at 120% CDI)
+Day 1:    1000 * (1 + 0.000640) ≈ 1000.64 RDX
+Day 30:   1000 * (1 + 0.000640)^30 ≈ 1019.3 RDX
+Day 252:  1000 * (1 + 0.000640)^252 ≈ 1174.7 RDX (~17.5% annual, compounded at 120% CDI)
 ```
 
 > ⚠️ **Simulation Simplification — ANBIMA 252 Business Day Convention**
